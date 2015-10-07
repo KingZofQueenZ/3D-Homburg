@@ -57,7 +57,8 @@
           renderer.setSize(WIDTH, HEIGHT);
           document.body.appendChild(renderer.domElement);
           camera = new THREE.PerspectiveCamera(45, WIDTH / HEIGHT, 0.1, 10000);
-          camera.position.set(800,800,800);
+          camera.position.set(-880,700,1300);
+          camera.lookAt(new THREE.Vector3(1, 1, 1));
           scene.add(camera);
           
           window.addEventListener('resize', function() {
@@ -68,10 +69,6 @@
             camera.updateProjectionMatrix();
           });
 
-        // position and point the camera to the center of the scene
-        camera.position.x = 800;
-        camera.position.y = 800;
-        camera.position.z = 800;
 
 
         var camControls = new THREE.FirstPersonControls(camera);
@@ -82,8 +79,10 @@
         camControls.constrainVertical = false;
         camControls.verticalMin = 1.0;
         camControls.verticalMax = 2.0;
-        camControls.lon = -150;
-        camControls.lat = 120;
+        camControls.lon = 300;
+        camControls.lat = -20;
+        camControls.mouseBlockWidth = 300;
+        camControls.mouseBlockHeight = 300;
         
         
         // LIGHTS
@@ -140,15 +139,7 @@
         dirLight.shadowDarkness = 0.35;
 
 
-        // GROUND
-        var groundGeo = new THREE.PlaneBufferGeometry( 10000, 10000 );
-        var groundMat = new THREE.MeshPhongMaterial( { color: 0xffffff, specular: 0x050505 } );
-        groundMat.color = new THREE.Color( 0xA2A371 );
-
-        var ground = new THREE.Mesh( groundGeo, groundMat );
-        ground.rotation.x = -Math.PI/2;
-        ground.position.y = -33;
-        scene.add( ground );
+      
 
         // SKYDOME
         var vertexShader = document.getElementById( 'vertexShader' ).textContent;
@@ -167,35 +158,51 @@
         scene.add( sky );
           
 
+        var groundMatFromModel;
         // MODEL          
         var loader = new THREE.ColladaLoader();
         loader.options.convertUpAxis = true;
         loader.load( 'model.dae', function ( collada ) {
-          var dae = collada.scene;
+          console.log(collada);
+          var dae = collada.dae.materials;
+          for (var property in dae) {
+            if (dae.hasOwnProperty(property) && dae[property].name == "Boden2") {
+              groundMatFromModel = dae[property];
+              console.log(groundMatFromModel)
+            }
+          }
           
-          dae.traverse(function(child){
+          var daeScene = collada.scene;          
+          daeScene.traverse(function(child){
               if (child instanceof THREE.Mesh){        
                   child.material.side = THREE.DoubleSide;        
-              }        
-          });          
+              } 
+          });       
           
-          
-        var skin = collada.skins[ 0 ];
-          dae.position.set(0,0,0);
-          dae.scale.set(1.5,1.5,1.5);
-          scene.add(dae);
+          var skin = collada.skins[ 0 ];
+          daeScene.position.set(0,0,0);
+          daeScene.scale.set(1.5,1.5,1.5);
+          scene.add(daeScene);
         });
            
+          // GROUND
+        var groundGeo = new THREE.PlaneBufferGeometry( 10000, 10000 );
+        var groundMat = new THREE.MeshPhongMaterial( { color: 0xa3a472, specular: 0x050505 } );
 
+        var ground = new THREE.Mesh( groundGeo, groundMat );
+        ground.rotation.x = -Math.PI/2;
+        ground.position.y = -33;
+        scene.add( ground );  
+         
         render();     
 
         function render() {
             var delta = clock.getDelta();
 
-            camControls.update(delta);
             renderer.clear();
             requestAnimationFrame(render);
-            renderer.render(scene, camera)
+            renderer.render(scene, camera);
+            camControls.update(delta);
         }
 
     }

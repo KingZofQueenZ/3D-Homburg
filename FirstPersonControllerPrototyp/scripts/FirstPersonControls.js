@@ -16,8 +16,12 @@ THREE.FirstPersonControls = function ( object, domElement ) {
 	this.movementSpeed = 1.0;
 	this.lookSpeed = 0.005;
   
-  this.mouseBlockWidth = 300;
-  this.mouseBlockHeight = 300;
+  this.mouseBlockWidth = 0;
+  this.mouseBlockHeight = 0;
+  
+  this.maxY = 2000;
+  this.maxX = 2000;
+  this.maxZ = 2000;
 
 	this.lookVertical = true;
 	this.autoForward = false;
@@ -222,38 +226,49 @@ THREE.FirstPersonControls = function ( object, domElement ) {
 			actualLookSpeed = 0;
 
 		}
-
-		var verticalLookRatio = 1;
+    
+    if(this.object.position.x < -this.maxX)
+      this.object.position.x = -this.maxX;
+    else if(this.object.position.x > this.maxX)
+      this.object.position.x = this.maxX;
+      
+    
+    if(this.object.position.y < 0)
+      this.object.position.y = 0;
+    else if(this.object.position.y > this.maxY)
+      this.object.position.y = this.maxY;
+      
+    if(this.object.position.z < -this.maxZ)
+      this.object.position.z = -this.maxZ;
+    else if(this.object.position.z > this.maxZ)
+      this.object.position.z = this.maxZ;
+  
+  	var verticalLookRatio = 1;
 
 		if ( this.constrainVertical ) {
-
 			verticalLookRatio = Math.PI / ( this.verticalMax - this.verticalMin );
-
 		}
 
-    console.log(this.mouseX);
     if(this.mouseX > (this.mouseBlockWidth/2) || this.mouseX < -(this.mouseBlockWidth/2)){      
       this.lon += this.mouseX * actualLookSpeed;
     }
 
 
-	  if ( this.lookVertical && (this.mouseY > (this.mouseBlockHeight/2) || this.mouseY < -(this.mouseBlockHeight/2)) ) 
-    this.lat -= this.mouseY * actualLookSpeed * verticalLookRatio;
-
-
+	  if ( this.lookVertical && (this.mouseY > (this.mouseBlockHeight/2) || this.mouseY < -(this.mouseBlockHeight/2)) ) {
+      this.lat -= this.mouseY * actualLookSpeed * verticalLookRatio;
+    }
+    
 		this.lat = Math.max( - 85, Math.min( 85, this.lat ) );
 		this.phi = THREE.Math.degToRad( 90 - this.lat );
 
 		this.theta = THREE.Math.degToRad( this.lon );
 
 		if ( this.constrainVertical ) {
-
 			this.phi = THREE.Math.mapLinear( this.phi, 0, Math.PI, this.verticalMin, this.verticalMax );
-
 		}
 
-		var targetPosition = this.target,
-			position = this.object.position;
+		var targetPosition = this.target;
+    var position = this.object.position;
 
 		targetPosition.x = position.x + 100 * Math.sin( this.phi ) * Math.cos( this.theta );
 		targetPosition.y = position.y + 100 * Math.cos( this.phi );

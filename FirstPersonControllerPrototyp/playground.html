@@ -12,6 +12,7 @@
 		<script src="scripts/three.js"></script>
 		<script src="scripts/ColladaLoader.js"></script>
 		<script src="scripts/OrbitControls.js"></script>
+    <script src="FirstPersonControls.js"></script>
     
     <script type="x-shader/x-vertex" id="vertexShader">
 			varying vec3 vWorldPosition;
@@ -36,6 +37,7 @@
 		</script>
 		<script>			    
         var scene, camera, renderer;
+        
         init();
         animate();
         function init() {
@@ -120,7 +122,7 @@
             });          
             
             
-            var skin = collada.skins[ 0 ];
+          var skin = collada.skins[ 0 ];
             dae.position.set(0,0,0);
             dae.scale.set(1.5,1.5,1.5);
             scene.add(dae);
@@ -129,6 +131,19 @@
           controls = new THREE.OrbitControls(camera, renderer.domElement);
           controls.maxPolarAngle = Math.PI/2;
           controls.maxDistance = 2500;
+          
+          
+          controls = new THREE.FirstPersonControls(camera);
+          controls.lookSpeed = 0.4;
+          controls.movementSpeed = 20;
+          controls.noFly = true;
+          controls.lookVertical = true;
+          controls.constrainVertical = true;
+          controls.verticalMin = 1.0;
+          controls.verticalMax = 2.0;
+          controls.lon = -150;
+          controls.lat = 120;
+          
         }
         
         function animate() {

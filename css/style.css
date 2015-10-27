@@ -87,6 +87,22 @@ li a {
     padding: 1em;
 }
 
+.share-container{
+  width: 200px; 
+  position: absolute; 
+  bottom: 0;
+  margin:0 0 120px -100px;
+  left: 50%;
+}
+
+.fhnw-logo{
+  width: 240px;
+  position: absolute; 
+  bottom: 0;
+  margin:0 0 50px -120px;
+  left: 50%;
+}
+
 .section {
     margin: 1em auto;
     margin-bottom: 3em !important;

@@ -27,6 +27,7 @@ THREE.FirstPersonControls = function ( object, domElement ) {
 	this.autoForward = false;
 
 	this.activeLook = true;
+  this.flightModeWithClick = false;
 
 	this.heightSpeed = false;
 	this.heightCoef = 1.0;
@@ -53,6 +54,7 @@ THREE.FirstPersonControls = function ( object, domElement ) {
 	this.moveRight = false;
 
 	this.mouseDragOn = false;
+  this.mouseMoveOn = false;
 
 	this.viewHalfX = 0;
 	this.viewHalfY = 0;
@@ -82,6 +84,9 @@ THREE.FirstPersonControls = function ( object, domElement ) {
 	};
 
 	this.onMouseDown = function ( event ) {
+    
+		event.preventDefault();
+		event.stopPropagation();
 
 		if ( this.domElement !== document ) {
 
@@ -89,21 +94,23 @@ THREE.FirstPersonControls = function ( object, domElement ) {
 
 		}
 
-		event.preventDefault();
-		event.stopPropagation();
 
 		if ( this.activeLook ) {
+      
+      if( this.flightModeWithClick){
+		      this.mouseMoveOn = true;
+      } else {
+        switch ( event.button ) {
 
-			switch ( event.button ) {
-
-				case 0: this.moveForward = true; break;
-				case 2: this.moveBackward = true; break;
-
-			}
+          case 0: this.moveForward = true; break;
+          case 2: this.moveBackward = true; break;
+  
+          this.mouseDragOn = true;
+        }
+      }
 
 		}
 
-		this.mouseDragOn = true;
 
 	};
 
@@ -113,18 +120,21 @@ THREE.FirstPersonControls = function ( object, domElement ) {
 		event.stopPropagation();
 
 		if ( this.activeLook ) {
-
-			switch ( event.button ) {
-
-				case 0: this.moveForward = false; break;
-				case 2: this.moveBackward = false; break;
-
-			}
+ 
+      if( this.flightModeWithClick){
+		      this.mouseMoveOn = false;
+      } else {
+        switch ( event.button ) {
+  
+          case 0: this.moveForward = false; break;
+          case 2: this.moveBackward = false; break;
+  
+        }
+      }
+		  this.mouseDragOn = false;
+			
 
 		}
-
-		this.mouseDragOn = false;
-
 	};
 
 	this.onMouseMove = function ( event ) {
@@ -249,12 +259,11 @@ THREE.FirstPersonControls = function ( object, domElement ) {
 			verticalLookRatio = Math.PI / ( this.verticalMax - this.verticalMin );
 		}
 
-    if(this.mouseX > (this.mouseBlockWidth/2) || this.mouseX < -(this.mouseBlockWidth/2)){      
+    if((this.mouseX > (this.mouseBlockWidth/2) || this.mouseX < -(this.mouseBlockWidth/2)) && (!this.flightModeWithClick || this.mouseMoveOn)){      
       this.lon += this.mouseX * actualLookSpeed;
     }
 
-
-	  if ( this.lookVertical && (this.mouseY > (this.mouseBlockHeight/2) || this.mouseY < -(this.mouseBlockHeight/2)) ) {
+	  if ( this.lookVertical && (!this.flightModeWithClick || this.mouseMoveOn) && (this.mouseY > (this.mouseBlockHeight/2) || this.mouseY < -(this.mouseBlockHeight/2)) ) {
       this.lat -= this.mouseY * actualLookSpeed * verticalLookRatio;
     }
     

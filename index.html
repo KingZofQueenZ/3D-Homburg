@@ -47,48 +47,94 @@
 		<script>
 			var settings = {
 				toggle: "#toggle", // the selector for the menu toggle, whatever clickable element you want to activate or deactivate the menu. A click listener will be added to this element.
-				animation_duration: "0.5s", //how long it takes to slide the menu
+				animation_duration: "0.3s", //how long it takes to slide the menu
 				place: "left", //where is the menu sliding from, possible options are (left | right | top | bottom)
 				animation_curve: "cubic-bezier(0.54, 0.01, 0.57, 1.03)", //animation curve for the sliding animation
 				body_slide: false, //set it to true if you want to use the effect where the entire page slides and not just the div
 				no_scroll: true, //set to true if you want the scrolling disabled while the menu is active
-            };
+      };
+      var menu;
 			
 			$( document ).ready(function() {
-				$('#main-sidebar').sliiide(settings);
-          // Init 3D Model
-          init3DModel();
+				menu = $('#main-sidebar').sliiide(settings);
+        
+        // Init 3D Model  
+        createBaseScene();
+        //addDirectinalLights();
+        addThreePointLighting();
+        addGround(0xA6A775);
+        addSkydome();
+        
+        setFPVControls();
+        loadColladaModel(".spinner");        
 			});	
       
+      function orbitClick(){
+        if($('#orbitBtn').attr('class').includes("box_selected"))
+          return;
+          
+        $('#fpvBtn').removeClass("box_selected");
+        $('#orbitBtn').addClass("box_selected");    
+        menu.deactivate();    
+       
+        $( "#overlay" ).fadeIn( 500, function() {
+          setOrbitControls();
+           $( "#overlay" ).fadeOut( 500 );
+        }); 
+      }
       
+      function fpvClick(){
+        if($('#fpvBtn').attr('class').includes("box_selected"))
+          return;
+          
+        $('#orbitBtn').removeClass("box_selected");
+        $('#fpvBtn').addClass("box_selected");
+        menu.deactivate();
+        
+        $( "#overlay" ).fadeIn( 500, function() {
+          setFPVControls();
+           $( "#overlay" ).fadeOut( 500 );
+        });          
+      }
+      
+      function preventEventPropagation(){        
+        event.preventDefault();
+        event.stopPropagation();
+      }
       
     </script>		
 	</head>
   
 	<body>
-<!-- div #main .main-content -->
-        <div id="main-navbar" class="main-navbar main-navbar-fixed-top">
-            <div class="main-navbar-content">
-                <div id="toggle-sidebar" class="icon left">
-                    <img id="toggle" alt="menu" src="assets/menu32@64.png" width="24px" height="24px">
-                </div>
-                    <img id="logo" alt="menu" src="assets/logofhnwwhite.png" style="height:35px; ">
-					
-                <div id="toggle-sidebar" class="icon right">
-                    <img id="toggle" alt="menu" src="assets/question.png" width="24px" height="24px">
-                </div>
+    <div class="spinner">
+      <div class="double-bounce1"></div>
+      <div class="double-bounce2"></div>
+    </div>
+  
+    <!-- div #main .main-content -->
+    <div id="main-navbar" class="main-navbar main-navbar-fixed-top">
+        <div class="main-navbar-content">
+            <div id="toggle-sidebar" class="icon left" onmousedown="preventEventPropagation();">
+                <img id="toggle" alt="menu" src="assets/menu32@64.png" width="24px" height="24px">
+            </div>
+                <img id="logo" alt="menu" src="assets/logofhnwwhite.png" style="height:35px; ">
+      
+            <div id="toggle-sidebar" class="icon right" onmousedown="preventEventPropagation();" >
+                <img id="toggle" alt="menu" src="assets/question.png" width="24px" height="24px">
             </div>
         </div>
-        <!-- div #main-navbar .main-navbar .main-navbar-fixed-top -->
+    </div>
 
-        <div id="main-sidebar" class="main-sidebar main-sidebar-left">
-            <div id="main-sidebar-wrapper" class="main-sidebar-wrapper">
-				<div class="buttons">
-					<div class="box">abd</div>
-					<div class="box">abd</div>
-				</div>
-			</div>
+    <!-- div #main-navbar .main-navbar .main-navbar-fixed-top -->
+    <div id="main-sidebar" class="main-sidebar main-sidebar-left" onmousedown="preventEventPropagation();">
+      <div id="main-sidebar-wrapper" class="main-sidebar-wrapper">
+        <div class="buttons">
+          <img id="orbitBtn" class="box" onclick="orbitClick();" src="assets/circular.png"></img>
+          <img id="fpvBtn" class="box box_selected" onclick="fpvClick();" src="assets/paper.png"></img>
         </div>
-
+      </div>
+    </div>
+    
+    <div id="overlay" ></div>
 	</body>
 </html>

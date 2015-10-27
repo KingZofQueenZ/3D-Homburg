@@ -4,18 +4,6 @@ var camera;
 var renderer;
 var clock;
 
-function init3DModel() {
-  
-  createBaseScene();
-  addDirectinalLights();
-  addGround();
-  addSkydome();
-  
-  //setOrbitControls();
-  setFPVControls();
-  loadColladaModel();
-}
-
 function createBaseScene() {
   clock = new THREE.Clock();
   scene = new THREE.Scene();
@@ -25,7 +13,8 @@ function createBaseScene() {
   renderer.setSize(WIDTH, HEIGHT);
   document.body.appendChild(renderer.domElement);
   camera = new THREE.PerspectiveCamera(45, WIDTH / HEIGHT, 0.1, 10000);
-  camera.position.set(800,800,800);
+  camera.position.set(-800,700,1300);
+  camera.lookAt(new THREE.Vector3(1, 1, 1));
   scene.add(camera);
   
   window.addEventListener('resize', function() {
@@ -119,10 +108,10 @@ function addThreePointLighting(){
 }
 
 // Add ground to scene
-function addGround(){
+function addGround(color){
   var groundGeo = new THREE.PlaneBufferGeometry( 10000, 10000 );
   var groundMat = new THREE.MeshPhongMaterial( { color: 0xffffff, specular: 0x050505 } );
-  groundMat.color = new THREE.Color( 0xA2A371 );
+  groundMat.color = new THREE.Color( color );
 
   var ground = new THREE.Mesh( groundGeo, groundMat );
   ground.rotation.x = -Math.PI/2;
@@ -150,7 +139,7 @@ function addSkydome(){
 }
 
 // Load collada model and add to scene
-function loadColladaModel(){
+function loadColladaModel(spinnerClass){
   var loader = new THREE.ColladaLoader();
   loader.options.convertUpAxis = true;
   loader.load( 'model.dae', function ( collada ) {
@@ -169,34 +158,45 @@ function loadColladaModel(){
     scene.add(dae);
     
     animate();
+    $(spinnerClass).hide();
   });
 }
 
 // Set orbit contorls
-function setOrbitControls(){
+function setOrbitControls(){  
+  camera.position.set(-800,700,1300);
+  camera.lookAt(new THREE.Vector3(1, 1, 1));
+  
+  if(controls != undefined)
+    controls.dispose();
+    
   controls = new THREE.OrbitControls(camera, renderer.domElement);
   controls.maxPolarAngle = Math.PI/2;
   controls.maxDistance = 2500;
 }
 
 function setFPVControls(){
+  camera.position.set(-800,700,1300);
+  camera.lookAt(new THREE.Vector3(1, 1, 1));
+  
+  if(controls != undefined)
+    controls.dispose();
+    
   controls = new THREE.FirstPersonControls(camera);
-  controls.lookSpeed = 0.2;
+  controls.lookSpeed = 0.12;
   controls.movementSpeed = 250;
   controls.noFly = true;
+  controls.flightModeWithClick = true;
   controls.lookVertical = true;
   controls.constrainVertical = false;
   controls.verticalMin = 1.0;
   controls.verticalMax = 2.0;
   controls.lon = 300;
   controls.lat = -20;
-  controls.mouseBlockWidth = 300;
-  controls.mouseBlockHeight = 300;
 }
 
 // Animate scene
 function animate() {
-  
   var delta = clock.getDelta();
   renderer.clear();
   requestAnimationFrame(animate);

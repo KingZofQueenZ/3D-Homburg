@@ -3,21 +3,46 @@
 <html>
 
 <head>
-    <title>Homburg First Person Cam</title>
+    <title>Homburg First Person Controller</title>
     <script src="scripts/three.js"></script>
     <script src="scripts/FirstPersonControls.js"></script>
 		<script src="scripts/ColladaLoader.js"></script>
 
-    <style>
-        body {
-            /* set margin to 0 and overflow to hidden, to go fullscreen */
-            margin: 0;
-            overflow: hidden;
-        }
-    </style>
+		<style>
+			body {
+				background:#000;
+				color: #eee;
+				padding:0;
+				margin:0;
+				font-weight:bold;
+				overflow:hidden;
+
+				font-family:Monospace;
+				font-size:13px;
+				text-align:center;
+			}
+
+			#info {
+				position: absolute;
+				top: 0px; width: 100%;
+				padding: 5px;
+				z-index:100;
+			}
+
+			a {
+
+				color: #0080ff;
+			}
+
+			b { color:orange }
+		</style>
 </head>
 <body>
 
+
+		<div id="info"><a href="https://www.cs.technik.fhnw.ch/homburg3d/OrbitController/" target="_blank">zum orbit controller</a> - homburg [first person flight controls]<br/><br/>
+		<b>WASD</b> move, <b>R|F</b> up | down, <b>up|down</b> pitch, <b>left|right</b> yaw<br/>
+		</div>
 <script type="x-shader/x-vertex" id="vertexShader">
     varying vec3 vWorldPosition;
     void main() {

@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset=utf-8>
+		<title>Homburg 3D</title>
+    <!-- CSS -->
+    <link rel="stylesheet" type="text/css" href="assets/style.css">
+    
+    <!-- jQuery scripts -->
+		<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.2/jquery.min.js"></script>
+		<script src="https://ajax.googleapis.com/ajax/libs/jqueryui/1.11.4/jquery-ui.min.js"></script>
+    
+    <!-- Sidebar scripts -->
+		<script src="scripts/jquery.simpler-sidebar.min.js"></script>
+		<script src="scripts/jquery.simpler-sidebar.min.js"></script>
+    
+    <!-- Three.js scripts -->
+		<script src="scripts/three.js"></script>
+		<script src="scripts/ColladaLoader.js"></script>
+		<script src="scripts/OrbitControls.js"></script>
+    <script src="scripts/FirstPersonControls.js"></script>
+		<script src="scripts/ModelHandling.js"></script>
+    
+    <!-- Shaders -->
+    <script type="x-shader/x-vertex" id="vertexShader">
+			varying vec3 vWorldPosition;
+			void main() {
+				vec4 worldPosition = modelMatrix * vec4( position, 1.0 );
+				vWorldPosition = worldPosition.xyz;
+				gl_Position = projectionMatrix * modelViewMatrix * vec4( position, 1.0 );
+			}
+		</script>
+		<script type="x-shader/x-fragment" id="fragmentShader">
+			uniform vec3 topColor;
+			uniform vec3 bottomColor;
+			uniform float offset;
+			uniform float exponent;
+
+			varying vec3 vWorldPosition;
+
+			void main() {
+				float h = normalize( vWorldPosition + offset ).y;
+				gl_FragColor = vec4( mix( bottomColor, topColor, max( pow( max( h , 0.0), exponent ), 0.0 ) ), 1.0 );
+			}
+		</script>
+    
+    <!-- Init -->
+		<script>
+      $(document).ready(function() {				
+          // Side Navigation
+          $('#main-sidebar').simplerSidebar({
+              opener: '#toggle-sidebar',
+              top: 42,
+              animation: {
+                  easing: "easeOutQuint"
+              },
+              sidebar: {
+                  align: 'left',
+                  closingLinks: '.close-sb'
+              }
+          });
+          
+        
+          
+          // Initialize model
+          init3DModel();
+      });
+      
+      
+      
+    </script>		
+	</head>
+  
+	<body>
+		<!-- div #main .main-content -->
+    <div id="main-navbar" class="main-navbar main-navbar-fixed-top">
+        <div class="main-navbar-content">
+            <div id="toggle-sidebar" class="icon left">
+                <img alt="menu" src="assets/menu32@64.png" width=24px height="24px" >
+            </div>
+        </div>
+    </div>
+    <!-- div #main-navbar .main-navbar .main-navbar-fixed-top -->
+
+    <div id="main-sidebar" class="main-sidebar main-sidebar-left">
+        <div id="main-sidebar-wrapper" class="main-sidebar-wrapper"></div>
+    </div>
+    <!-- #main-sidebar .main-sidebar .main-sidebar-left -->
+
+
+	</body>
+</html>

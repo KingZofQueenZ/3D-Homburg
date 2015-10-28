@@ -4,11 +4,11 @@
 		<meta charset=utf-8>
 		<title>Homburg 3D</title>
     <!-- fb meta -->
-		<meta property="og:title" content="Ridiculously Responsive Social Sharing Buttons" />
+		<meta property="og:title" content="Testtest" />
 		<meta property="og:type" content="website" />
 		<meta property="og:url" content="http://kurtnoble.com/labs/rrssb/index.html" />
 		<meta property="og:image" content="http://kurtnoble.com/labs/rrssb/media/facebook-share.jpg" />
-		<meta property="og:description" content="No one wants to create social buttons over and over again. RRSSB is a super flexible system that works in any container. SASS-powered, retina ready, svg images, tiny file size and auto-magical resizing. A KNI Labs freebie."/>
+		<meta property="og:description" content="Blabla"/>
 
 		<!-- twitter meta -->
 		<meta name="twitter:card" content="summary_large_image">
@@ -20,8 +20,9 @@
 
     
     <!-- CSS -->
-    <link rel="stylesheet" type="text/css" href="css/style.css">
+    	<link rel="stylesheet" type="text/css" href="css/style.css">
 		<link rel="stylesheet" href="css/rrssb.css" />
+		<link href='https://fonts.googleapis.com/css?family=Lato:400,300|Roboto:400,300' rel='stylesheet' type='text/css'>
     
     <!-- jQuery scripts -->
 		<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.2/jquery.min.js"></script>
@@ -35,7 +36,7 @@
 		<script src="scripts/three.js"></script>
 		<script src="scripts/ColladaLoader.js"></script>
 		<script src="scripts/OrbitControls.js"></script>
-    <script src="scripts/FirstPersonControls.js"></script>
+        <script src="scripts/FirstPersonControls.js"></script>
 		<script src="scripts/ModelHandling.js"></script>
     
 
@@ -74,10 +75,11 @@
 				body_slide: false, //set it to true if you want to use the effect where the entire page slides and not just the div
 				no_scroll: true, //set to true if you want the scrolling disabled while the menu is active
       };
+	  
       var menu;
 			
-			$( document ).ready(function() {
-				menu = $('#main-sidebar').sliiide(settings);
+	  $( document ).ready(function() {
+		menu = $('#main-sidebar').sliiide(settings);
         
         // Init 3D Model  
         createBaseScene();
@@ -86,9 +88,13 @@
         addSkydome();
         
         setOrbitControls();
-        loadColladaModel(".spinner");        
-			});	
+        loadColladaModel(".sk-folding-cube", "#overlay");        
+	  });	
       
+	  function showHelp(){
+		  $("#help").fadeToggle(500);
+	  }
+	  	  
       function orbitClick(){
         if($('#orbitBtn').attr('class').includes("box_selected"))
           return;
@@ -126,10 +132,17 @@
 	</head>
   
 	<body>
-    <div class="spinner">
+    <!--<div class="spinner">
       <div class="double-bounce1"></div>
       <div class="double-bounce2"></div>
-    </div>
+    </div>-->
+	<div class="sk-folding-cube">
+		<div class="sk-cube1 sk-cube"></div>
+		<div class="sk-cube2 sk-cube"></div>
+		<div class="sk-cube4 sk-cube"></div>
+		<div class="sk-cube3 sk-cube"></div>
+	</div>
+  
   
     <!-- div #main .main-content -->
     <div id="main-navbar" class="main-navbar main-navbar-fixed-top">
@@ -139,7 +152,7 @@
             </div>
                   
             <div id="toggle-sidebar" class="icon right" onmousedown="preventEventPropagation();" >
-                <img id="toggle" alt="menu" src="assets/question.png" width="24px" height="24px">
+                <img id="questionmark" alt="menu" onclick="showHelp()" src="assets/question.png" width="24px" height="24px">
             </div>
         </div>
     </div>
@@ -153,6 +166,8 @@
           <img id="fpvBtn" class="box" onclick="fpvClick();" src="assets/paper.png"></img>
         </div>
         
+		<p>Test</p>
+		
         <!-- Buttons start here. Copy this ul to your document. -->
 				<div class="share-container">
 					<ul class="rrssb-buttons">
@@ -218,6 +233,27 @@
       </div>
     </div>
     
-    <div id="overlay" ></div>
+	<div id="help">
+		<table style="margin:75px auto 0 auto">
+			<tr style="height: 50px">
+				<td><b>Mausrad</b></td>
+				<td>Zoom</td>
+			</tr>
+			<tr style="height: 50px">
+				<td><b>Linke Maustaste</b></td>
+				<td>Modell drehen</td>
+			</tr>
+			<tr style="height: 50px">
+				<td><b>Rechte Maustaste</b></td>
+				<td>Modell ziehen</td>
+			</tr>
+		</table>
+	
+	</div>
+	
+    <div id="overlay"></div>
+	
+	<div id="copyright">&copy; Daniel Mohler- Schmid, Läufelfingen / 3D-Rekonstruktion &copy; 2013 Archäologie Baselland, Joe Rohrer</div>
+	
 	</body>
 </html>

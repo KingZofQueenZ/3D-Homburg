@@ -139,7 +139,7 @@ function addSkydome(){
 }
 
 // Load collada model and add to scene
-function loadColladaModel(spinnerClass){
+function loadColladaModel(spinnerClass, overlayClass){
   var loader = new THREE.ColladaLoader();
   loader.options.convertUpAxis = true;
   loader.load( 'model.dae', function ( collada ) {
@@ -159,6 +159,7 @@ function loadColladaModel(spinnerClass){
     
     animate();
     $(spinnerClass).hide();
+    $(overlayClass).hide();
   });
 }
 

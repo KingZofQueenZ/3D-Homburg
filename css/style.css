@@ -7,6 +7,7 @@ img, figure {
 	cursor: pointer;
 }
 
+/* ----------- Spinner Circle CSS -----------*/
 .spinner {
   width: 60px;
   height: 60px;
@@ -14,6 +15,7 @@ img, figure {
   top: 50%;
   margin: -30px 0 0 -30px;
   position: absolute;
+  z-index: 20;
 }
 
 .double-bounce1, .double-bounce2 {
@@ -50,6 +52,108 @@ img, figure {
   }
 }
 
+/* ----------- Spinner Rectangle CSS -----------*/
+.sk-folding-cube {
+  margin: -35px 0 0 -35px;
+  width: 70px;
+  height: 70px;
+  position: relative;
+  -webkit-transform: rotateZ(45deg);
+          transform: rotateZ(45deg);
+          
+          
+  left: 50%;
+  top: 50%;
+  position: absolute;
+  z-index: 20;
+}
+
+.sk-folding-cube .sk-cube {
+  float: left;
+  width: 50%;
+  height: 50%;
+  position: relative;
+  -webkit-transform: scale(1.1);
+      -ms-transform: scale(1.1);
+          transform: scale(1.1); 
+}
+.sk-folding-cube .sk-cube:before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: #fff;
+  -webkit-animation: sk-foldCubeAngle 2.4s infinite linear both;
+          animation: sk-foldCubeAngle 2.4s infinite linear both;
+  -webkit-transform-origin: 100% 100%;
+      -ms-transform-origin: 100% 100%;
+          transform-origin: 100% 100%;
+}
+.sk-folding-cube .sk-cube2 {
+  -webkit-transform: scale(1.1) rotateZ(90deg);
+          transform: scale(1.1) rotateZ(90deg);
+}
+.sk-folding-cube .sk-cube3 {
+  -webkit-transform: scale(1.1) rotateZ(180deg);
+          transform: scale(1.1) rotateZ(180deg);
+}
+.sk-folding-cube .sk-cube4 {
+  -webkit-transform: scale(1.1) rotateZ(270deg);
+          transform: scale(1.1) rotateZ(270deg);
+}
+.sk-folding-cube .sk-cube2:before {
+  -webkit-animation-delay: 0.3s;
+          animation-delay: 0.3s;
+}
+.sk-folding-cube .sk-cube3:before {
+  -webkit-animation-delay: 0.6s;
+          animation-delay: 0.6s; 
+}
+.sk-folding-cube .sk-cube4:before {
+  -webkit-animation-delay: 0.9s;
+          animation-delay: 0.9s;
+}
+@-webkit-keyframes sk-foldCubeAngle {
+  0%, 10% {
+    -webkit-transform: perspective(140px) rotateX(-180deg);
+            transform: perspective(140px) rotateX(-180deg);
+    opacity: 0; 
+  } 25%, 75% {
+    -webkit-transform: perspective(140px) rotateX(0deg);
+            transform: perspective(140px) rotateX(0deg);
+    opacity: 1; 
+  } 90%, 100% {
+    -webkit-transform: perspective(140px) rotateY(180deg);
+            transform: perspective(140px) rotateY(180deg);
+    opacity: 0; 
+  } 
+}
+
+@keyframes sk-foldCubeAngle {
+  0%, 10% {
+    -webkit-transform: perspective(140px) rotateX(-180deg);
+            transform: perspective(140px) rotateX(-180deg);
+    opacity: 0; 
+  } 25%, 75% {
+    -webkit-transform: perspective(140px) rotateX(0deg);
+            transform: perspective(140px) rotateX(0deg);
+    opacity: 1; 
+  } 90%, 100% {
+    -webkit-transform: perspective(140px) rotateY(180deg);
+            transform: perspective(140px) rotateY(180deg);
+    opacity: 0; 
+  }
+}
+
+
+
+
+
+
+
+
 ul {
     margin: 0;
     padding: 0;
@@ -66,7 +170,7 @@ li a {
 .main-navbar {
     position: relative;
     color: white;
-    z-index: 10;
+    z-index: 5;
 }
 
 .main-navbar-fixed-top {
@@ -74,11 +178,12 @@ li a {
     top: 0;
     right: 0;
     left: 0;
-    height: 42px;
+    /*height: 42px;*/
+    height: 60px;
 }
 
 .main-navbar-content {
-    padding: 4px 16px;
+    padding: 13px 16px;
 }
 
 .main-content {
@@ -137,6 +242,16 @@ li a {
     width: 300px;
 }
 
+.main-sidebar p{
+    color: rgb(255, 255, 255);
+    font-family: Lato;
+    font-size: 25px;
+    font-weight: 100;
+    letter-spacing: 2px;
+    margin: 220px 0 0 0;
+    text-decoration: none;
+}
+
 .main-sidebar-wrapper {
     position: relative;
     height: 100%;
@@ -150,7 +265,6 @@ body {
 	color: #eee;
 	padding:0;
 	margin:0;
-	font-weight:bold;
 	overflow:hidden;
 	font-family:Verdana;
 	font-size:13px;
@@ -165,11 +279,9 @@ body {
 	z-index:100;
 }
 
-a { color: #0080ff; }
 
 canvas { width: 100%; height: 100% }
 
-b { color: #00A329 }
 
 .sidebar-wrapper {
 	position: relative;
@@ -182,7 +294,7 @@ b { color: #00A329 }
   margin: 100px 10px 0 10px;
   padding: 5px;
   height: 45px;
-  background-color: rgba(1,1,1,0.5);
+  background-color: rgba(1,1,1,0.45);
   border: 1px solid white;
 	cursor: pointer;
 }
@@ -206,8 +318,51 @@ b { color: #00A329 }
     width: 100%;
     height: 100%;
     background: black;
-    display: none;
+    z-index: 10;
 }
+
+#help {
+    position: absolute;
+    width: 300px;
+    height: 300px;
+    background: rgba(0,0,0,0.5);
+    top: 0;
+    right: 0;
+    margin:10px 10px 0 0;
+    border-radius: 15px 15px 15px 15px;
+    display: none;
+    
+    text-align:left;
+	  font-size:18px;
+    font-family: Lato;
+}
+
+#copyright{
+    position: absolute;
+    bottom: 0;
+    left: 50%;
+    width:600px;
+    text-align:center;
+    margin: 0 0 15px -300px;
+    color: white;
+    font-family: roboto;
+}
+
+/*
+#help:after {
+	bottom: 100%;
+	left: 93%;
+	border: solid transparent;
+	content: " ";
+	height: 0;
+	width: 0;
+	position: absolute;
+	pointer-events: none;
+	border-color: rgba(7, 3, 69, 0);
+	border-bottom-color: rgba(0,0,0,0.5);
+	border-width: 20px;
+	margin-left: -20px;
+}*/
 
 
 

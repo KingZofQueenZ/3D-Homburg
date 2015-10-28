@@ -10,6 +10,7 @@ var scene;
 var camera; 
 var renderer;
 var clock;
+var daeModel;
 
 function createBaseScene() {
   clock = new THREE.Clock();
@@ -152,9 +153,9 @@ function loadColladaModel(spinnerClass, overlayClass){
   var loader = new THREE.ColladaLoader();
   loader.options.convertUpAxis = true;
   loader.load( 'model.dae', function ( collada ) {
-    var dae = collada.scene;
+    daeModel = collada.scene;
     
-    dae.traverse(function(child){
+    daeModel.traverse(function(child){
       if (child instanceof THREE.Mesh){        
         child.material.side = THREE.DoubleSide;        
       }        
@@ -162,9 +163,9 @@ function loadColladaModel(spinnerClass, overlayClass){
     
     
     var skin = collada.skins[ 0 ];
-    dae.position.set(0,0,0);
-    dae.scale.set(1.5,1.5,1.5);
-    scene.add(dae);
+    daeModel.position.set(0,0,0);
+    daeModel.scale.set(1.5,1.5,1.5);
+    scene.add(daeModel);
     
     animate();
     $(spinnerClass).hide();
@@ -234,9 +235,123 @@ function resetCameraPositionOnModel(){
 
 // Animate scene
 function animate() {
-  var delta = clock.getDelta();
+  detectCollision();
+
   renderer.clear();
   requestAnimationFrame(animate);
   renderer.render(scene, camera);
-  controls.update(delta);
+  controls.update(clock.getDelta());
+}
+
+function detectCollision(){
+  resetBlockings();
+  
+  if(controls.moveForward){
+    detectF();
+  } 
+  
+  if(controls.moveBackward){
+    detectB();
+  } 
+  
+  if(controls.moveRight){
+    detectR(); 
+  } 
+  
+  if(controls.moveLeft){
+    detectL();
+  }
+  
+  if(controls.moveForward && controls.moveRight){
+    detectFR();
+  }
+  
+  if(controls.moveForward && controls.moveLeft){
+    detectFL();
+  }
+  
+  if(controls.moveBackward && controls.moveRight){
+    detectBR();
+  }
+  
+  if(controls.moveBackward && controls.moveLeft){
+    detectBL();
+  }  
+ 
+}
+
+function resetBlockings(){
+    controls.blockForward = false;
+    controls.blockBackward = false;
+    controls.blockRight = false;
+    controls.blockLeft = false;
+}
+
+function detectF(){
+  if(detectCollisionUsingVector(0, 0, -1)){
+    console.log("Forward collision");
+    controls.blockForward = true;
+  } 
+}
+
+function detectB(){  
+   if(detectCollisionUsingVector(0, 0, 1)){
+    console.log("Back collision");
+    controls.blockBackward = true;
+  } 
+}
+
+function detectR(){
+  if(detectCollisionUsingVector(1, 0, 0)){
+    console.log("Right collision");
+    controls.blockRight = true;
+  } 
+}
+
+function detectL(){
+  if(detectCollisionUsingVector(-1, 0, 0)){
+    console.log("Left collision");
+    controls.blockLeft = true;
+  }
+}
+
+function detectFR(){
+  if(detectCollisionUsingVector(1, 0, -1)){
+    console.log("Forward Right collision");
+    controls.blockForward = true;
+    controls.blockRight = true;
+  } 
+}
+
+function detectFL(){
+  if(detectCollisionUsingVector(-1, 0, -1)){
+    console.log("Forward Left collision");
+    controls.blockForward = true;
+    controls.blockLeft = true;
+  } 
+}
+
+function detectBR(){
+  if(detectCollisionUsingVector(1, 0, 1)){
+    console.log("Back Right collision");
+    controls.blockBackward = true;
+    controls.blockRight = true;
+  }
+}
+
+function detectBL(){
+  if(detectCollisionUsingVector(-1, 0, 1)){
+    console.log("Back Left collision");
+    controls.blockBackward = true;
+    controls.blockLeft = true;
+  } 
+}
+
+function detectCollisionUsingVector(x, y, z){
+  var cameraDirection = new THREE.Vector3( x, y, z );
+  cameraDirection.applyQuaternion( camera.quaternion );
+  
+  var rayCaster = new THREE.Raycaster(camera.position, cameraDirection);    
+  var intersects = rayCaster.intersectObject(daeModel, true);  
+  return (intersects.length > 0 && intersects[0].distance < 25);
 }

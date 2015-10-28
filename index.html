@@ -81,20 +81,29 @@
       var menu;
 			
       $( document ).ready(function() {
-          menu = $('#main-sidebar').sliiide(settings);   
-              
-          // Init 3D Model  
-          createBaseScene();
-          addThreePointLighting();
-          addGround(0xA6A775);
-          addSkydome();
-          
-          setOrbitControls(false);
-          showOrbitHelp();
-          orbitHelpShown = true;
-          loadColladaModel(".sk-folding-cube", "#overlay");        
-      });	
+        menu = $('#main-sidebar').sliiide(settings);   
+            
+        // Init 3D Model  
+        createBaseScene();
+        addThreePointLighting();
+        addGround(0xA6A775);
+        addSkydome();
         
+        startWithFPV();       
+        loadColladaModel(".sk-folding-cube", "#overlay");        
+      });	
+      
+      function startWithOrbit(){
+        setOrbitControls(false);
+        showOrbitHelp();
+        orbitHelpShown = true;
+      }
+       
+      function startWithFPV(){
+        setFPVControls(false);
+        showFPVHelp();
+        fpvHelpShown = true;
+      } 
         
       //-------- Help box handling---------
       function toggleHelpClick(){

@@ -1,4 +1,11 @@
+var BASE_CAM_POSITION = [-800, 700, 1300];
+var CAM_ORBIT = 0;
+var CAM_FPV = 1;
+
 var controls;
+var currentControl;
+var orbitCam;
+var fpvCam;
 var scene;
 var camera; 
 var renderer;
@@ -7,13 +14,15 @@ var clock;
 function createBaseScene() {
   clock = new THREE.Clock();
   scene = new THREE.Scene();
-  var WIDTH = window.innerWidth,
-  HEIGHT = window.innerHeight;
+  var windowWidth = window.innerWidth;
+  var windowHeight = window.innerHeight;
   renderer = new THREE.WebGLRenderer({antialias:true});
-  renderer.setSize(WIDTH, HEIGHT);
+  renderer.setSize(windowWidth, windowHeight);
   document.body.appendChild(renderer.domElement);
-  camera = new THREE.PerspectiveCamera(45, WIDTH / HEIGHT, 0.1, 10000);
-  camera.position.set(-800,700,1300);
+  camera = new THREE.PerspectiveCamera(45, windowWidth / windowHeight, 0.1, 10000);
+  camera.position.set(BASE_CAM_POSITION[0],BASE_CAM_POSITION[1],BASE_CAM_POSITION[2]);
+  fpvCam = [camera.position.x, camera.position.y, camera.position.z];
+  orbitCam = [camera.position.x, camera.position.y, camera.position.z];
   camera.lookAt(new THREE.Vector3(1, 1, 1));
   scene.add(camera);
   
@@ -164,9 +173,9 @@ function loadColladaModel(spinnerClass, overlayClass){
 }
 
 // Set orbit contorls
-function setOrbitControls(){  
-  camera.position.set(-800,700,1300);
-  camera.lookAt(new THREE.Vector3(1, 1, 1));
+function setOrbitControls(restoreCam){  
+  if(restoreCam)
+    restoreOrbitCam();
   
   if(controls != undefined)
     controls.dispose();
@@ -174,11 +183,19 @@ function setOrbitControls(){
   controls = new THREE.OrbitControls(camera, renderer.domElement);
   controls.maxPolarAngle = Math.PI/2;
   controls.maxDistance = 2500;
+  
+  currentControl = CAM_ORBIT;
 }
 
-function setFPVControls(){
-  camera.position.set(-800,700,1300);
-  camera.lookAt(new THREE.Vector3(1, 1, 1));
+function restoreOrbitCam(){
+  fpvCam = [camera.position.x, camera.position.y, camera.position.z];
+  camera.position.set(orbitCam[0],orbitCam[1],orbitCam[2]);
+  camera.lookAt(new THREE.Vector3(1, 1, 1));  
+}
+
+function setFPVControls(restoreCam){
+  if(restoreCam)
+    restoreFPVCam();
   
   if(controls != undefined)
     controls.dispose();
@@ -194,6 +211,25 @@ function setFPVControls(){
   controls.verticalMax = 2.0;
   controls.lon = 300;
   controls.lat = -20;
+  
+  currentControl = CAM_FPV;
+}
+
+function restoreFPVCam(){
+  orbitCam = [camera.position.x, camera.position.y, camera.position.z];
+  camera.position.set(fpvCam[0],fpvCam[1],fpvCam[2]);
+  camera.lookAt(new THREE.Vector3(1, 1, 1));  
+}
+
+function resetCameraPositionOnModel(){
+  camera.position.set(BASE_CAM_POSITION[0],BASE_CAM_POSITION[1],BASE_CAM_POSITION[2]);
+  camera.lookAt(new THREE.Vector3(1, 1, 1));  
+  
+  if(currentControl == CAM_ORBIT){
+    setOrbitControls(false);    
+  } else if(currentControl == CAM_FPV){
+    setFPVControls(false);
+  }    
 }
 
 // Animate scene

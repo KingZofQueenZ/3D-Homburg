@@ -16,6 +16,7 @@
 		// "target" sets the location of focus, where the object orbits around
 		// and where it pans with respect to.
 		this.target = new THREE.Vector3();
+    this.viewTargetFromBelow = false;
 
 		// Limits to how far you can dolly in and out ( PerspectiveCamera only )
 		this.minDistance = 0;
@@ -241,6 +242,9 @@
 				radius = Math.max( this.minDistance, Math.min( this.maxDistance, radius ) );
 
 				// move target to panned location
+        if(!this.viewTargetFromBelow && this.target.y < 0 && panOffset.y < 0){
+          panOffset.y = 0
+        }
 				this.target.add( panOffset );
 
 				offset.x = radius * Math.sin( phi ) * Math.sin( theta );

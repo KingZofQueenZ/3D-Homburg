@@ -75,26 +75,61 @@
 				body_slide: false, //set it to true if you want to use the effect where the entire page slides and not just the div
 				no_scroll: true, //set to true if you want the scrolling disabled while the menu is active
       };
+      var orbitHelpShown = false;
+      var fpvHelpShown = false;
 	  
       var menu;
 			
-	  $( document ).ready(function() {
-		menu = $('#main-sidebar').sliiide(settings);
+      $( document ).ready(function() {
+          menu = $('#main-sidebar').sliiide(settings);   
+              
+          // Init 3D Model  
+          createBaseScene();
+          addThreePointLighting();
+          addGround(0xA6A775);
+          addSkydome();
+          
+          setOrbitControls(false);
+          showOrbitHelp();
+          orbitHelpShown = true;
+          loadColladaModel(".sk-folding-cube", "#overlay");        
+      });	
         
-        // Init 3D Model  
-        createBaseScene();
-        addThreePointLighting();
-        addGround(0xA6A775);
-        addSkydome();
         
-        setOrbitControls();
-        loadColladaModel(".sk-folding-cube", "#overlay");        
-	  });	
+      //-------- Help box handling---------
+      function toggleHelpClick(){
+        if(currentControl == CAM_FPV){
+          toggleFPVHelp();
+        } else if(currentControl == CAM_ORBIT){
+          toggleOrbitHelp();
+        }
+      }
       
-	  function showHelp(){
-		  $("#help").fadeToggle(500);
-	  }
-	  	  
+      function toggleOrbitHelp(){
+        $("#helpOrbit").fadeToggle(500);
+      }
+      
+      function showOrbitHelp(){
+        $("#helpOrbit").fadeIn(300);
+      }
+      
+      function hideOrbitHelp(){
+        $("#helpOrbit").hide();
+      }
+      
+      function toggleFPVHelp(){
+        $("#helpFPV").fadeToggle(500);
+      }
+      
+      function showFPVHelp(){
+        $("#helpFPV").fadeIn(300);
+      }
+      
+      function hideFPVHelp(){
+        $("#helpFPV").hide();
+      }
+	  	          
+      //--------- Controls handling ---------
       function orbitClick(){
         if($('#orbitBtn').attr('class').includes("box_selected"))
           return;
@@ -104,8 +139,14 @@
         menu.deactivate();    
        
         $( "#overlay" ).fadeIn( 500, function() {
-          setOrbitControls();
-           $( "#overlay" ).fadeOut( 500 );
+          setOrbitControls(true);
+          hideFPVHelp();
+           $( "#overlay" ).fadeOut( 500, function(){
+             if(!orbitHelpShown){
+               showFPVHelp();
+               orbitHelpShown = true;
+             }
+           });
         }); 
       }
       
@@ -118,11 +159,26 @@
         menu.deactivate();
         
         $( "#overlay" ).fadeIn( 500, function() {
-          setFPVControls();
-           $( "#overlay" ).fadeOut( 500 );
+          setFPVControls(true);
+          hideOrbitHelp();
+           $( "#overlay" ).fadeOut( 500, function(){
+             if(!fpvHelpShown){
+               showFPVHelp();
+               fpvHelpShown = true;
+             }
+           });
         });          
       }
       
+      $(document).keydown(function(e) {    
+          if (e.keyCode == 82) {
+            $( "#overlay" ).fadeIn( 200, function() {
+              resetCameraPositionOnModel();
+              $( "#overlay" ).fadeOut( 200 );
+            });      
+          }
+      });
+        
       function preventEventPropagation(){        
         event.preventDefault();
         event.stopPropagation();
@@ -131,17 +187,13 @@
     </script>		
 	</head>
   
-	<body>
-    <!--<div class="spinner">
-      <div class="double-bounce1"></div>
-      <div class="double-bounce2"></div>
-    </div>-->
-	<div class="sk-folding-cube">
-		<div class="sk-cube1 sk-cube"></div>
-		<div class="sk-cube2 sk-cube"></div>
-		<div class="sk-cube4 sk-cube"></div>
-		<div class="sk-cube3 sk-cube"></div>
-	</div>
+	<body>    
+    <div class="sk-folding-cube">
+      <div class="sk-cube1 sk-cube"></div>
+      <div class="sk-cube2 sk-cube"></div>
+      <div class="sk-cube4 sk-cube"></div>
+      <div class="sk-cube3 sk-cube"></div>
+    </div>
   
   
     <!-- div #main .main-content -->
@@ -152,7 +204,7 @@
             </div>
                   
             <div id="toggle-sidebar" class="icon right" onmousedown="preventEventPropagation();" >
-                <img id="questionmark" alt="menu" onclick="showHelp()" src="assets/question.png" width="24px" height="24px">
+                <img id="questionmark" alt="menu" onclick="toggleHelpClick()" src="assets/question.png" width="24px" height="24px">
             </div>
         </div>
     </div>
@@ -233,23 +285,52 @@
       </div>
     </div>
     
-	<div id="help">
-		<table style="margin:75px auto 0 auto">
-			<tr style="height: 50px">
-				<td><b>Mausrad</b></td>
+	<div id="helpOrbit" class="help-box">
+		<table style="margin:20px auto 20px auto">
+			<tr style="height: 40px">
+				<td><b>Mausrad:</b></td>
 				<td>Zoom</td>
 			</tr>
-			<tr style="height: 50px">
-				<td><b>Linke Maustaste</b></td>
+			<tr style="height: 40px">
+				<td><b>Linke Maustaste:</b></td>
 				<td>Modell drehen</td>
 			</tr>
-			<tr style="height: 50px">
-				<td><b>Rechte Maustaste</b></td>
+			<tr style="height: 40px">
+				<td><b>Rechte Maustaste:</b></td>
 				<td>Modell ziehen</td>
 			</tr>
+			<tr style="height: 40px">
+				<td><b>R:</b></td>
+				<td>Kamera zurücksetzten</td>
+			</tr>
 		</table>
-	
 	</div>
+    
+   <div id="helpFPV" class="help-box">
+		<table style="margin:20px auto 20px auto">
+			<tr style="height: 40px">
+				<td><b>W:</b></td>
+				<td>Vor</td>
+        <td><b>S:</b></td>
+				<td>Zurück</td>
+			</tr>
+			<tr style="height: 40px">
+				<td><b>A:</b></td>
+				<td>Links</td>
+        <td><b>D:</b></td>
+				<td>Rechts</td>
+			</tr>
+			<tr style="height: 40px">
+				<td colspan="2"><b>Maustasten:</b></td>
+				<td colspan="2">Kamera bewegen</td>
+			</tr>
+			<tr style="height: 40px">
+				<td colspan="2"><b>R:</b></td>
+				<td colspan="2">Kamera zurücksetzten</td>
+			</tr>
+		</table>
+	</div>
+	
 	
     <div id="overlay"></div>
 	

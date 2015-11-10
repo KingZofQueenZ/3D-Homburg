@@ -89,7 +89,7 @@
         addGround(0xA6A775);
         addSkydome();
         
-        startWithFPV();       
+        startWithOrbit();       
         loadColladaModel(".sk-folding-cube", "#overlay");        
       });	
       
@@ -97,12 +97,14 @@
         setOrbitControls(false);
         showOrbitHelp();
         orbitHelpShown = true;
+        $('#orbitBtn').addClass("box_selected");    
       }
        
       function startWithFPV(){
         setFPVControls(false);
         showFPVHelp();
         fpvHelpShown = true;
+        $('#fpvBtn').addClass("box_selected");
       } 
         
       //-------- Help box handling---------
@@ -187,6 +189,31 @@
             });      
           }
       });
+      
+      //--------- Map handling ---------
+      function fullMapClick(){    
+        $( ".map-box" ).fadeOut( 100, function() {
+           $( ".full-map-box" ).fadeIn( 100, function(){
+           });
+        });     
+        $( ".resize-icon" ).fadeOut( 100, function() {
+           $( ".resize-icon-full" ).fadeIn( 100, function(){
+           });
+        });  
+        preventEventPropagation();      
+      }
+      
+      function smallMapClick(){    
+        $( ".full-map-box" ).fadeOut( 100, function() {
+           $( ".map-box" ).fadeIn( 100, function(){
+           });
+        });     
+        $( ".resize-icon-full" ).fadeOut( 100, function() {
+           $( ".resize-icon" ).fadeIn( 100, function(){
+           });
+        });    
+        preventEventPropagation();   
+      }
         
       function preventEventPropagation(){        
         event.preventDefault();
@@ -223,11 +250,10 @@
       <div id="main-sidebar-wrapper" class="main-sidebar-wrapper">
         
         <div class="buttons">
-          <img id="orbitBtn" class="box box_selected" onclick="orbitClick();" src="assets/circular.png"></img>
+          <img id="orbitBtn" class="box" onclick="orbitClick();" src="assets/circular.png"></img>
           <img id="fpvBtn" class="box" onclick="fpvClick();" src="assets/paper.png"></img>
         </div>
-        
-		<p>Test</p>
+		<p>Homburg</p>
 		
         <!-- Buttons start here. Copy this ul to your document. -->
 				<div class="share-container">
@@ -339,9 +365,28 @@
 			</tr>
 		</table>
 	</div>
+  
+  <div class="map-box" onmousedown="preventEventPropagation();">
+    <img id="map" src="assets/mapCentered.png"/>
+    <div class="red-dot-outer">
+    </div>
+    <div class="red-dot-inner">
+    </div>
+  </div>
+  <img class="resize-icon" src="assets/resize.png" onclick="fullMapClick();" onmousedown="preventEventPropagation();" />
 	
+  <div class="full-map-box" onmousedown="preventEventPropagation();">
+    <img id="full-map" src="assets/mapFullCentered.png"/>
+    <div id="full-map-point" class="full-map-point">
+      <div class="red-dot-outer">
+      </div>
+      <div class="red-dot-inner">
+      </div>
+    </div>
+  </div>
+  <img class="resize-icon-full" src="assets/resize.png" onclick="smallMapClick();"  onmousedown="preventEventPropagation();"/>
 	
-    <div id="overlay"></div>
+  <div id="overlay"></div>
 	
 	<div id="copyright">&copy; Daniel Mohler- Schmid, Läufelfingen / 3D-Rekonstruktion &copy; 2013 Archäologie Baselland, Joe Rohrer</div>
 	

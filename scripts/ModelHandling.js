@@ -2,7 +2,7 @@
 var BASE_CAM_POSITION = [-800, 700, 1300];
 var CAM_ORBIT = 0;
 var CAM_FPV = 1;
-var MARKERS_FILENAME = "markers.json";
+var MARKERS_FILENAME = "config/markers.txt";
 
 // ---- Map values ----
 var MODEL_WIDTH = 1478;
@@ -232,7 +232,10 @@ function loadColladaModel(spinnerClass, overlayClass){
 
 // Add Markers to the scene
 function addSavedMarkersToScene(){
-  var savedMarkers = JSON.parse(readTextFile(MARKERS_FILENAME));
+  var text = readTextFile(MARKERS_FILENAME);
+  if(text == "")
+    return;
+  var savedMarkers = JSON.parse(text);
   $.each(savedMarkers, function (index, value){
     var marker = new THREE.Mesh(new THREE.SphereGeometry(5), new THREE.MeshLambertMaterial({ color: 0xff0000 }));
     marker.position.x = value.position.x;
@@ -244,9 +247,9 @@ function addSavedMarkersToScene(){
   });
 }
 
-function readTextFile(file)
-{
+function readTextFile(file){
   var rawFile = new XMLHttpRequest();
+  var text = "";
   rawFile.open("GET", file, false);
   rawFile.onreadystatechange = function ()
   {
@@ -254,11 +257,12 @@ function readTextFile(file)
     {
       if(rawFile.status === 200 || rawFile.status == 0)
       {
-        return rawFile.responseText;
+        text = rawFile.responseText;
       }
     }
   }
   rawFile.send(null);
+  return text;
 }
 
 // -------------------- Controllers --------------------
@@ -583,12 +587,12 @@ function addMarkerToFile(marker){
   markers.push(marker);
   var objectsToSave = [];
   $.each(markers, function(index, value){
-    objectsToSave.push({name: marker.name, position: marker.position});
+    objectsToSave.push({name: value.name, position: value.position});
   });
   var serializedMarkers = JSON.stringify(objectsToSave);
   
   $.ajax({
-    url: "fwrite.php",
+    url: "scripts/fwrite.php",
     //data, an url-like string for easy access serverside
     data: { obj: serializedMarkers },
     dataType: "json",
@@ -596,10 +600,6 @@ function addMarkerToFile(marker){
     async: true,
     type: 'post',
     timeout : 5000,
-    
-    success: function(data) {
-      console.log(JSON.parse(readTextFile("test.txt"));
-    },
   });
 }
 

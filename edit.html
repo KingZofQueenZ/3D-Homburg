@@ -71,16 +71,7 @@
       function startWithOrbit(){
         setOrbitControls(false);
       }
-      
-      $(document).keydown(function(e) {    
-          if (e.keyCode == 82) {
-            $( "#overlay" ).fadeIn( 200, function() {
-              resetCameraPositionOnModel();
-              $( "#overlay" ).fadeOut( 200 );
-            });      
-          }
-      });
-        
+              
       function preventEventPropagation(){        
         event.preventDefault();
         event.stopPropagation();

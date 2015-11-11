@@ -1,6 +1,10 @@
+// ---- Constants ----
 var BASE_CAM_POSITION = [-800, 700, 1300];
 var CAM_ORBIT = 0;
 var CAM_FPV = 1;
+var MARKERS_FILENAME = "markers.json";
+
+// ---- Map values ----
 var MODEL_WIDTH = 1478;
 var MAX_CAM_HEIGHT = 2550;
 var MIN_MAP_WIDTH = 300;
@@ -12,6 +16,20 @@ var baseMarginX;
 var baseMarginY;
 var mapPixelFactor;
 
+// ---- Edit mode values ----
+var clickInfo = {
+  x: 0,
+  y: 0,
+  userHasClicked: false
+};
+var currentMousePos = { x: -1, y: -1 };
+var raycaster = new THREE.Raycaster();
+var directionVector = new THREE.Vector3();
+
+// ---- Model values ----
+var windowWidth;
+var windowHeight;
+var editmode;
 var controls;
 var currentControl;
 var orbitCam;
@@ -21,12 +39,16 @@ var camera;
 var renderer;
 var clock;
 var daeModel;
+var markers = [];
 
-function createBaseScene() {
+
+// -------------------- Scene & model initialization --------------------
+// Init base scene
+function createBaseScene(editmode) {
   clock = new THREE.Clock();
   scene = new THREE.Scene();
-  var windowWidth = window.innerWidth;
-  var windowHeight = window.innerHeight;
+  windowWidth = window.innerWidth;
+  windowHeight = window.innerHeight;
   renderer = new THREE.WebGLRenderer({antialias:true});
   renderer.setSize(windowWidth, windowHeight);
   document.body.appendChild(renderer.domElement);
@@ -38,12 +60,35 @@ function createBaseScene() {
   scene.add(camera);
   
   window.addEventListener('resize', function() {
-    var WIDTH = window.innerWidth,
-    HEIGHT = window.innerHeight;
-    renderer.setSize(WIDTH, HEIGHT);
-    camera.aspect = WIDTH / HEIGHT;
+    windowWidth = window.innerWidth;
+    windowHeight = window.innerHeight;
+    renderer.setSize(windowWidth, windowHeight);
+    camera.aspect = windowWidth / windowHeight;
     camera.updateProjectionMatrix();
   });
+  
+  this.editmode = editmode;
+  if(editmode){
+    $( document ).keypress(function(e) {
+      if(e.keyCode != 32)
+        return;
+        
+      clickInfo.userHasClicked = true;
+      clickInfo.x = currentMousePos.x;
+      clickInfo.y = currentMousePos.y;
+    });
+    
+    $(document).mousemove(function(event) {
+        currentMousePos.x = event.pageX;
+        currentMousePos.y = event.pageY;
+    });
+  } else {
+    window.addEventListener('click', function (evt) {
+      clickInfo.userHasClicked = true;
+      clickInfo.x = evt.clientX;
+      clickInfo.y = evt.clientY;
+    }, false);
+  }
 }
 
 // Add ligths to scene
@@ -177,15 +222,46 @@ function loadColladaModel(spinnerClass, overlayClass){
     daeModel.scale.set(1.5,1.5,1.5);
     scene.add(daeModel);
     
-    var box = new THREE.Box3().setFromObject(daeModel);
-    console.log(box.min, box.max, box.size());
-    
     animate();
     $(spinnerClass).hide();
     $(overlayClass).hide();
   });
+  
+  addSavedMarkersToScene();
 }
 
+// Add Markers to the scene
+function addSavedMarkersToScene(){
+  var savedMarkers = JSON.parse(readTextFile(MARKERS_FILENAME));
+  $.each(savedMarkers, function (index, value){
+    var marker = new THREE.Mesh(new THREE.SphereGeometry(5), new THREE.MeshLambertMaterial({ color: 0xff0000 }));
+    marker.position.x = value.position.x;
+    marker.position.y = value.position.y;
+    marker.position.z = value.position.z;
+    marker.name = value.name;
+    markers.push(marker);
+    scene.add(marker);
+  });
+}
+
+function readTextFile(file)
+{
+  var rawFile = new XMLHttpRequest();
+  rawFile.open("GET", file, false);
+  rawFile.onreadystatechange = function ()
+  {
+    if(rawFile.readyState === 4)
+    {
+      if(rawFile.status === 200 || rawFile.status == 0)
+      {
+        return rawFile.responseText;
+      }
+    }
+  }
+  rawFile.send(null);
+}
+
+// -------------------- Controllers --------------------
 // Set orbit contorls
 function setOrbitControls(restoreCam){  
   if(restoreCam)
@@ -201,12 +277,14 @@ function setOrbitControls(restoreCam){
   currentControl = CAM_ORBIT;
 }
 
+// Reset orbit camera position
 function restoreOrbitCam(){
   fpvCam = [camera.position.x, camera.position.y, camera.position.z];
   camera.position.set(orbitCam[0],orbitCam[1],orbitCam[2]);
   camera.lookAt(new THREE.Vector3(1, 1, 1));  
 }
 
+// Set FPV controller
 function setFPVControls(restoreCam){
   if(restoreCam)
     restoreFPVCam();
@@ -230,12 +308,14 @@ function setFPVControls(restoreCam){
   currentControl = CAM_FPV;
 }
 
+// Reset FPV camera
 function restoreFPVCam(){
   orbitCam = [camera.position.x, camera.position.y, camera.position.z];
   camera.position.set(fpvCam[0],fpvCam[1],fpvCam[2]);
   camera.lookAt(new THREE.Vector3(1, 1, 1));  
 }
 
+// Save and restore camera position on controller change
 function resetCameraPositionOnModel(){
   camera.position.set(BASE_CAM_POSITION[0],BASE_CAM_POSITION[1],BASE_CAM_POSITION[2]);
   camera.lookAt(new THREE.Vector3(1, 1, 1));  
@@ -247,6 +327,28 @@ function resetCameraPositionOnModel(){
   }    
 }
 
+
+// Animate scene
+function animate() {
+  var updateControls = true;
+  if(editmode)
+    setBoxOnUserClick();
+  else
+    updateControls = detectIfMarkerClicked();
+    
+  renderer.clear();
+  requestAnimationFrame(animate);
+  renderer.render(scene, camera);
+  
+  if(updateControls){
+    updateMap();
+    detectCollision();
+    controls.update(clock.getDelta());
+  }
+}
+
+// -------------------- Map handling --------------------
+// Calculate values used for map
 function calculateMapValues(width){
   mapWidth = width;
   mapHeight = mapWidth / 1.846;
@@ -256,17 +358,7 @@ function calculateMapValues(width){
   mapPixelFactor = mapModelWidth / MODEL_WIDTH;
 }
 
-// Animate scene
-function animate() {
-  updateMap();
-  detectCollision();
-
-  renderer.clear();
-  requestAnimationFrame(animate);
-  renderer.render(scene, camera);
-  controls.update(clock.getDelta());
-}
-
+// Update camera position on map
 function updateMap(){
   var width = MIN_MAP_WIDTH  + MAP_WIDTH_DELTA - (MAP_WIDTH_DELTA / MAX_CAM_HEIGHT * camera.position.y);
   calculateMapValues(width);
@@ -296,9 +388,38 @@ function updateMap(){
   $('#full-map-point').css('margin-right', marginXFull + 'px');
   $('#full-map-point').css('margin-bottom',  marginYFull + 'px');
   
-  console.log(marginX + " / " + marginY);
 }
 
+
+// -------------------- Marker detection --------------------
+function detectIfMarkerClicked(){
+  if (!clickInfo.userHasClicked) {
+    return true;
+  }
+  clickInfo.userHasClicked = false;
+
+  var mouse = new THREE.Vector2();
+  mouse.x = ( clickInfo.x / windowWidth ) * 2 - 1;
+  mouse.y = -( clickInfo.y / windowHeight ) * 2 + 1;
+  raycaster.setFromCamera( mouse, camera );
+  
+  var intersects = raycaster.intersectObjects(markers, true);
+  if (intersects.length > 0) {
+    console.log(intersects[0].object.name);
+    showContentOverlay(intersects[0].object.name);
+    return false;
+  }
+  return true;
+}
+
+function showContentOverlay(markerName){
+  $( "#content" ).load( "content/" + markerName + ".html" );
+  $( "#content-container" ).fadeIn( 300 );
+}
+
+
+// -------------------- Collision detection --------------------
+// Detect collision
 function detectCollision(){
   resetBlockings();
   
@@ -344,6 +465,7 @@ function detectCollision(){
  
 }
 
+// Reset block direction from previous collision detection
 function resetBlockings(){
     controls.blockForward = false;
     controls.blockBackward = false;
@@ -351,6 +473,7 @@ function resetBlockings(){
     controls.blockLeft = false;
 }
 
+// Exectue collsions detection on each direction
 function detectF(){
   if(detectCollisionUsingVector(0, 0, -1)){
     controls.blockForward = true;
@@ -403,11 +526,80 @@ function detectBL(){
   } 
 }
 
+// Detect collsion using a vector
 function detectCollisionUsingVector(x, y, z){
   var cameraDirection = new THREE.Vector3( x, y, z );
   cameraDirection.applyQuaternion( camera.quaternion );
   
   var rayCaster = new THREE.Raycaster(camera.position, cameraDirection);    
-  var intersects = rayCaster.intersectObject(daeModel, true);  
+  var intersects = rayCaster.intersectObject(daeModel, true);   
   return (intersects.length > 0 && intersects[0].distance < 25);
 }
+
+
+// -------------------- EDITMODE: Add marker boxes --------------------
+// Get coordinates to add marker
+function setBoxOnUserClick(){
+  if (!clickInfo.userHasClicked) {
+    return;
+  }
+  clickInfo.userHasClicked = false;
+
+  var mouse = new THREE.Vector2();
+  mouse.x = ( clickInfo.x / windowWidth ) * 2 - 1;
+  mouse.y = -( clickInfo.y / windowHeight ) * 2 + 1;
+  raycaster.setFromCamera( mouse, camera );
+  
+  var intersects = raycaster.intersectObject(daeModel, true);
+  if (intersects.length > 0) {
+    showAddMarkerDialog(intersects[0].point);
+  }
+}
+
+// Show marker dialog
+function showAddMarkerDialog(point){
+  bootbox.prompt("Bitte geben Sie dem Marker einen Namen", function(result) {    
+    if (result === null || result.length == 0) {    
+      return;                                        
+    } else {      
+      addMarkerToModel(point, result);               
+    }
+  });
+}
+
+// Add marker to scene
+function addMarkerToModel(point, name){
+    var marker = new THREE.Mesh(new THREE.SphereGeometry(5), new THREE.MeshLambertMaterial({ color: 0xff0000 }));
+    marker.position.x = point.x;
+    marker.position.y = point.y;
+    marker.position.z = point.z;
+    marker.name = name;
+    addMarkerToFile(marker);
+    scene.add(marker);
+}
+
+// Save markers to file
+function addMarkerToFile(marker){
+  markers.push(marker);
+  var objectsToSave = [];
+  $.each(markers, function(index, value){
+    objectsToSave.push({name: marker.name, position: marker.position});
+  });
+  var serializedMarkers = JSON.stringify(objectsToSave);
+  
+  $.ajax({
+    url: "fwrite.php",
+    //data, an url-like string for easy access serverside
+    data: { obj: serializedMarkers },
+    dataType: "json",
+    cache: false,
+    async: true,
+    type: 'post',
+    timeout : 5000,
+    
+    success: function(data) {
+      console.log(JSON.parse(readTextFile("test.txt"));
+    },
+  });
+}
+

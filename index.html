@@ -20,7 +20,7 @@
 
     
     <!-- CSS -->
-    	<link rel="stylesheet" type="text/css" href="css/style.css">
+    <link rel="stylesheet" type="text/css" href="css/style.css">
 		<link rel="stylesheet" href="css/rrssb.css" />
 		<link href='https://fonts.googleapis.com/css?family=Lato:400,300|Roboto:400,300' rel='stylesheet' type='text/css'>
     
@@ -31,6 +31,7 @@
     <!-- helper scripts -->
 		<script src="scripts/sliiide.min.js"></script>
 		<script src="scripts/rrssb.min.js"></script>
+		<script src="scripts/json.js"></script>
     
     <!-- Three.js scripts -->
 		<script src="scripts/three.js"></script>
@@ -214,6 +215,12 @@
         });    
         preventEventPropagation();   
       }
+      
+      //-------- Content overlay handling ------
+      function closeContent(){    
+        $( "#content-container" ).fadeOut( 100 );
+        preventEventPropagation();   
+      }
         
       function preventEventPropagation(){        
         event.preventDefault();
@@ -387,6 +394,12 @@
   <img class="resize-icon-full" src="assets/resize.png" onclick="smallMapClick();"  onmousedown="preventEventPropagation();"/>
 	
   <div id="overlay"></div>
+  
+  <div id="content-container" onclick="closeContent();" onmousedown="preventEventPropagation();">
+    <div id="content" onclick="preventEventPropagation();" >
+    </div>
+    <img class="close-icon" src="assets/close.png" onclick="closeContent();">x</div>
+  </div>
 	
 	<div id="copyright">&copy; Daniel Mohler- Schmid, Läufelfingen / 3D-Rekonstruktion &copy; 2013 Archäologie Baselland, Joe Rohrer</div>
 	

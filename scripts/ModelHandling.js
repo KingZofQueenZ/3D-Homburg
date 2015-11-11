@@ -1,6 +1,16 @@
 var BASE_CAM_POSITION = [-800, 700, 1300];
 var CAM_ORBIT = 0;
 var CAM_FPV = 1;
+var MODEL_WIDTH = 1478;
+var MAX_CAM_HEIGHT = 2550;
+var MIN_MAP_WIDTH = 300;
+var MAP_WIDTH_DELTA = 700;
+var mapWidth;
+var mapHeight;
+var mapModelWidth;
+var baseMarginX;
+var baseMarginY;
+var mapPixelFactor;
 
 var controls;
 var currentControl;
@@ -152,7 +162,7 @@ function addSkydome(){
 function loadColladaModel(spinnerClass, overlayClass){
   var loader = new THREE.ColladaLoader();
   loader.options.convertUpAxis = true;
-  loader.load( 'model.dae', function ( collada ) {
+  loader.load( 'assets/model.dae', function ( collada ) {
     daeModel = collada.scene;
     
     daeModel.traverse(function(child){
@@ -166,6 +176,9 @@ function loadColladaModel(spinnerClass, overlayClass){
     daeModel.position.set(0,0,0);
     daeModel.scale.set(1.5,1.5,1.5);
     scene.add(daeModel);
+    
+    var box = new THREE.Box3().setFromObject(daeModel);
+    console.log(box.min, box.max, box.size());
     
     animate();
     $(spinnerClass).hide();
@@ -208,6 +221,7 @@ function setFPVControls(restoreCam){
   controls.flightModeWithClick = true;
   controls.lookVertical = true;
   controls.constrainVertical = false;
+  controls.blockUpDown = true;
   controls.verticalMin = 1.0;
   controls.verticalMax = 2.0;
   controls.lon = 300;
@@ -233,8 +247,18 @@ function resetCameraPositionOnModel(){
   }    
 }
 
+function calculateMapValues(width){
+  mapWidth = width;
+  mapHeight = mapWidth / 1.846;
+  mapModelWidth = mapWidth / 1.52;
+  baseMarginX = -(mapWidth / 2 - 125);
+  baseMarginY = -(mapHeight / 2 - 125); 
+  mapPixelFactor = mapModelWidth / MODEL_WIDTH;
+}
+
 // Animate scene
 function animate() {
+  updateMap();
   detectCollision();
 
   renderer.clear();
@@ -243,40 +267,80 @@ function animate() {
   controls.update(clock.getDelta());
 }
 
+function updateMap(){
+  var width = MIN_MAP_WIDTH  + MAP_WIDTH_DELTA - (MAP_WIDTH_DELTA / MAX_CAM_HEIGHT * camera.position.y);
+  calculateMapValues(width);
+  
+  $('#map').width(mapWidth);
+  $('#map').height(mapHeight);
+  
+  var marginX = -(camera.position.x * mapPixelFactor) + baseMarginX;
+  var marginY = -(camera.position.z * mapPixelFactor) + baseMarginY;
+  var marginXFull = -(camera.position.x * mapPixelFactor) +  mapWidth / 2;
+  var marginYFull = -(camera.position.z * mapPixelFactor) + mapHeight / 2;
+  
+  if(marginXFull > mapWidth - 18){
+    marginXFull = mapWidth - 18;
+  } else if(marginXFull < 0){
+    marginXFull = 0;
+  }
+  
+  if(marginYFull > mapHeight - 18){
+    marginYFull = mapHeight -18;
+  } else if(marginYFull < 0){
+    marginYFull = 0;
+  }
+  
+  $('#map').css('margin-left', marginX + 'px');
+  $('#map').css('margin-top', marginY + 'px');
+  $('#full-map-point').css('margin-right', marginXFull + 'px');
+  $('#full-map-point').css('margin-bottom',  marginYFull + 'px');
+  
+  console.log(marginX + " / " + marginY);
+}
+
 function detectCollision(){
   resetBlockings();
   
-  if(controls.moveForward){
-    detectF();
-  } 
-  
-  if(controls.moveBackward){
-    detectB();
-  } 
-  
-  if(controls.moveRight){
-    detectR(); 
-  } 
-  
-  if(controls.moveLeft){
-    detectL();
-  }
-  
   if(controls.moveForward && controls.moveRight){
     detectFR();
+    return;
   }
   
   if(controls.moveForward && controls.moveLeft){
     detectFL();
+    return;
   }
   
   if(controls.moveBackward && controls.moveRight){
     detectBR();
+    return;
   }
   
   if(controls.moveBackward && controls.moveLeft){
     detectBL();
+    return;
   }  
+  
+  if(controls.moveForward){
+    detectF();
+    return;
+  } 
+  
+  if(controls.moveBackward){
+    detectB();
+    return;
+  } 
+  
+  if(controls.moveRight){
+    detectR(); 
+    return;
+  } 
+  
+  if(controls.moveLeft){
+    detectL();
+    return;
+  }
  
 }
 
@@ -289,35 +353,30 @@ function resetBlockings(){
 
 function detectF(){
   if(detectCollisionUsingVector(0, 0, -1)){
-    console.log("Forward collision");
     controls.blockForward = true;
   } 
 }
 
 function detectB(){  
    if(detectCollisionUsingVector(0, 0, 1)){
-    console.log("Back collision");
     controls.blockBackward = true;
   } 
 }
 
 function detectR(){
   if(detectCollisionUsingVector(1, 0, 0)){
-    console.log("Right collision");
     controls.blockRight = true;
   } 
 }
 
 function detectL(){
   if(detectCollisionUsingVector(-1, 0, 0)){
-    console.log("Left collision");
     controls.blockLeft = true;
   }
 }
 
 function detectFR(){
   if(detectCollisionUsingVector(1, 0, -1)){
-    console.log("Forward Right collision");
     controls.blockForward = true;
     controls.blockRight = true;
   } 
@@ -325,7 +384,6 @@ function detectFR(){
 
 function detectFL(){
   if(detectCollisionUsingVector(-1, 0, -1)){
-    console.log("Forward Left collision");
     controls.blockForward = true;
     controls.blockLeft = true;
   } 
@@ -333,7 +391,6 @@ function detectFL(){
 
 function detectBR(){
   if(detectCollisionUsingVector(1, 0, 1)){
-    console.log("Back Right collision");
     controls.blockBackward = true;
     controls.blockRight = true;
   }
@@ -341,7 +398,6 @@ function detectBR(){
 
 function detectBL(){
   if(detectCollisionUsingVector(-1, 0, 1)){
-    console.log("Back Left collision");
     controls.blockBackward = true;
     controls.blockLeft = true;
   } 

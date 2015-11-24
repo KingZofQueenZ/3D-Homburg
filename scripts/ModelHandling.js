@@ -1,6 +1,5 @@
 // ---- Constants ----
-var BASE_CAM_POSITION = [0, 700, 0];
-//var BASE_CAM_POSITION = [-800, 700, 1300];
+var BASE_CAM_POSITION = [-800, 700, 1300];
 var CAM_ORBIT = 0;
 var CAM_FPV = 1;
 var MARKERS_FILENAME = "config/markers.txt";

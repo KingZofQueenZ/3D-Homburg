@@ -6,6 +6,11 @@ img, figure {
 	cursor: pointer;
 }
 
+a {
+  color: white;
+  text-decoration: none;
+}
+
 
 /* ----------- Spinner Rectangle CSS -----------*/
 .sk-folding-cube {
@@ -203,8 +208,15 @@ li a {
     font-size: 25px;
     font-weight: 100;
     letter-spacing: 2px;
-    margin: 220px 0 0 0;
     text-decoration: none;
+    margin: 20px 20px 0px 20px;
+    height: 55px;
+    border-bottom: 1px solid white;
+	  cursor: pointer;
+}
+
+.menu-sidebar-content{
+    margin: 220px 0 0 0;
 }
 
 .main-sidebar-wrapper {
@@ -276,6 +288,33 @@ canvas { width: 100%; height: 100% }
     z-index: 10;
 }
 
+#topoBox{
+  position: absolute;
+  background: rgba(0,0,0,0.5);
+  border-radius: 0 0 15px 15px;
+  font-family: roboto;
+  width: 180px;
+  height: 80px;
+  right: 50%;
+  margin-right: -90px;
+  z-index: 15;
+  display: none;
+  top: 0;
+}
+
+#topoBox p{
+  position: relative;
+  font-size: 24px;
+  font-weight: bold;
+  margin: 5px;
+  text-align: top;
+}
+
+#topoBox a{
+  font-size: 18px;
+  text-decoration: underline;
+}
+
 .help-box {
     position: absolute;
     padding: 0px 20px 0px 20px;
@@ -287,7 +326,7 @@ canvas { width: 100%; height: 100% }
     display: none;
     text-align:left;
 	  font-size:18px;
-    font-family: Lato;
+    font-family: roboto;
 }
 
 .resize-icon{
@@ -304,38 +343,17 @@ canvas { width: 100%; height: 100% }
     position: absolute;
     border-left: 2px solid black;
     border-top: 2px solid black;
-    right: 0;
-    bottom: 0;
     width: 250px;
     height: 250px;
+    right: 0;
+    bottom: 0;
     background-color: white;
-    overflow: hidden;
 }
 
-.map-box .red-dot-inner{
-    position: absolute;
-    width: 14px;
-    height: 14px;
-    right: 0;
-    bottom: 0;
-    margin: 0px 118px 118px 0px;
-    border-radius: 7px;
-    line-height: 14px;
-    background: red;
+.map-box #map {
+    width: 250px;
+    height: 250px;
 }
-
-.map-box .red-dot-outer{
-    position: absolute;
-    width: 18px;
-    height: 18px;
-    right: 0;
-    bottom: 0;
-    margin: 0px 116px 116px 0px;
-    border-radius: 9px;
-    line-height: 18px;
-    background: black;
-}
-
 
 .full-map-box{
     display: none;
@@ -354,7 +372,7 @@ canvas { width: 100%; height: 100% }
     width: 960px;
 }
 
-.full-map-point {
+.map-point {
     position: absolute;
     width: 18px;
     height: 18px;
@@ -362,7 +380,7 @@ canvas { width: 100%; height: 100% }
     bottom: 0;
 }
 
-.full-map-point .red-dot-inner{
+.map-point .red-dot-inner{
     position: fixed;
     width: 14px;
     height: 14px;
@@ -373,7 +391,7 @@ canvas { width: 100%; height: 100% }
     background: red;
 }
 
-.full-map-point .red-dot-outer{
+.map-point .red-dot-outer{
     position: fixed;
     width: 18px;
     height: 18px;

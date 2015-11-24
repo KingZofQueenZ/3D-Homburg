@@ -1,5 +1,6 @@
 // ---- Constants ----
-var BASE_CAM_POSITION = [-800, 700, 1300];
+var BASE_CAM_POSITION = [0, 700, 0];
+//var BASE_CAM_POSITION = [-800, 700, 1300];
 var CAM_ORBIT = 0;
 var CAM_FPV = 1;
 var MARKERS_FILENAME = "config/markers.txt";
@@ -9,6 +10,11 @@ var MODEL_WIDTH = 1478;
 var MAX_CAM_HEIGHT = 2550;
 var MIN_MAP_WIDTH = 300;
 var MAP_WIDTH_DELTA = 700;
+
+var MAP_FULL_WIDTH = 960;
+var MAP_FULL_HEIGHT = 520;
+var MAP_MINI_WIDTH = 250;
+var MAP_MINI_HEIGHT = 250;
 var mapWidth;
 var mapHeight;
 var mapModelWidth;
@@ -204,7 +210,7 @@ function addSkydome(){
 }
 
 // Load collada model and add to scene
-function loadColladaModel(spinnerClass, overlayClass){
+function loadColladaModel(spinnerClass, overlayClass, topoId){
   var loader = new THREE.ColladaLoader();
   loader.options.convertUpAxis = true;
   loader.load( 'assets/model.dae', function ( collada ) {
@@ -224,7 +230,8 @@ function loadColladaModel(spinnerClass, overlayClass){
     
     animate();
     $(spinnerClass).hide();
-    $(overlayClass).hide();
+    $(overlayClass).hide(); 
+    $(topoId).slideDown( "fast");
   });
   
   addSavedMarkersToScene();
@@ -354,7 +361,7 @@ function animate() {
 // -------------------- Map handling --------------------
 // Calculate values used for map
 function calculateMapValues(width){
-  mapWidth = width;
+  mapWidth = 960;
   mapHeight = mapWidth / 1.846;
   mapModelWidth = mapWidth / 1.52;
   baseMarginX = -(mapWidth / 2 - 125);
@@ -363,35 +370,45 @@ function calculateMapValues(width){
 }
 
 // Update camera position on map
-function updateMap(){
-  var width = MIN_MAP_WIDTH  + MAP_WIDTH_DELTA - (MAP_WIDTH_DELTA / MAX_CAM_HEIGHT * camera.position.y);
-  calculateMapValues(width);
+function updateMap(){  
+  var mapPixelFactorMini = MAP_MINI_WIDTH / MODEL_WIDTH;
+  var mapPixelFactorFull = (MAP_FULL_WIDTH / 1.864) / MODEL_WIDTH;
   
-  $('#map').width(mapWidth);
-  $('#map').height(mapHeight);
+  console.log(mapPixelFactorMini + " " + mapPixelFactorFull);
   
-  var marginX = -(camera.position.x * mapPixelFactor) + baseMarginX;
-  var marginY = -(camera.position.z * mapPixelFactor) + baseMarginY;
-  var marginXFull = -(camera.position.x * mapPixelFactor) +  mapWidth / 2;
-  var marginYFull = -(camera.position.z * mapPixelFactor) + mapHeight / 2;
+  var marginXMini = -(camera.position.x * mapPixelFactorMini) +  MAP_MINI_WIDTH / 2;
+  var marginYMini = -(camera.position.z * mapPixelFactorMini) + MAP_MINI_HEIGHT / 2;
+  var marginXFull = -(camera.position.x * mapPixelFactorFull) +  MAP_FULL_WIDTH / 2;
+  var marginYFull = -(camera.position.z * mapPixelFactorFull) + MAP_FULL_HEIGHT / 2;
+
+  if(marginXMini > MAP_MINI_WIDTH - 18){
+    marginXMini = MAP_MINI_WIDTH - 18;
+  } else if(marginXMini < 0){
+    marginXMini = 0;
+  }
   
-  if(marginXFull > mapWidth - 18){
-    marginXFull = mapWidth - 18;
+  if(marginYMini > MAP_MINI_HEIGHT - 18){
+    marginYMini = MAP_MINI_HEIGHT - 18;
+  } else if(marginYMini < 0){
+    marginYMini = 0;
+  }
+  
+  if(marginXFull > MAP_FULL_WIDTH - 18){
+    marginXFull = MAP_FULL_WIDTH - 18;
   } else if(marginXFull < 0){
     marginXFull = 0;
   }
   
-  if(marginYFull > mapHeight - 18){
-    marginYFull = mapHeight -18;
+  if(marginYFull > MAP_FULL_HEIGHT - 18){
+    marginYFull = MAP_FULL_HEIGHT - 18;
   } else if(marginYFull < 0){
     marginYFull = 0;
   }
   
-  $('#map').css('margin-left', marginX + 'px');
-  $('#map').css('margin-top', marginY + 'px');
+  $('#mini-map-point').css('margin-right', marginXMini + 'px');
+  $('#mini-map-point').css('margin-bottom',  marginYMini + 'px');
   $('#full-map-point').css('margin-right', marginXFull + 'px');
   $('#full-map-point').css('margin-bottom',  marginYFull + 'px');
-  
 }
 
 

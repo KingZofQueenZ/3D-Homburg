@@ -78,6 +78,7 @@
       };
       var orbitHelpShown = false;
       var fpvHelpShown = false;
+      var topoShown = false;
 	  
       var menu;
 			
@@ -91,7 +92,7 @@
         addSkydome();
         
         startWithOrbit();       
-        loadColladaModel(".sk-folding-cube", "#overlay");        
+        loadColladaModel(".sk-folding-cube", "#overlay", "#topoBox");  
       });	
       
       function startWithOrbit(){
@@ -191,6 +192,13 @@
           }
       });
       
+      $(document).click(function(e){
+        if(!topoShown){
+          $("#topoBox").slideUp( "fast");
+          topoShown = true;
+        }
+      });
+      
       //--------- Map handling ---------
       function fullMapClick(){    
         $( ".map-box" ).fadeOut( 100, function() {
@@ -260,7 +268,15 @@
           <img id="orbitBtn" class="box" onclick="orbitClick();" src="assets/circular.png"></img>
           <img id="fpvBtn" class="box" onclick="fpvClick();" src="assets/paper.png"></img>
         </div>
-		<p>Homburg</p>
+        <div>
+          
+        </div>
+        
+        <div class="menu-sidebar-content">
+          <p onclick="menu.deactivate();">Homburg</p>
+          <p><a href="http://www.laeufelfingen.com/gebäude/h/ch.htm" target="_blank">Chronik</a></p>
+          <p><a href="http://www.laeufelfingen.com/gebäude/h/ch.htm" target="_blank">Umfrage</a></p>
+        </div>
 		
         <!-- Buttons start here. Copy this ul to your document. -->
 				<div class="share-container">
@@ -327,6 +343,11 @@
       </div>
     </div>
     
+  <div id="topoBox">
+    <p>Homburg</p>
+    <a href="https://map.geo.admin.ch/?Y=631430&X=250317&crosshair=circle&zoom=8&bgLayer=ch.swisstopo.pixelkarte-farbe&lang=de&topic=ech&layers=ch.swisstopo.zeitreihen,ch.bfs.gebaeude_wohnungs_register,ch.bafu.wrz-wildruhezonen_portal,ch.swisstopo.swisstlm3d-wanderwege&layers_visibility=false,false,false,false&layers_timestamp=18641231" target="_blank">Standort</a>
+  </div>
+    
 	<div id="helpOrbit" class="help-box">
 		<table style="margin:20px auto 20px auto">
 			<tr style="height: 40px">
@@ -374,17 +395,19 @@
 	</div>
   
   <div class="map-box" onmousedown="preventEventPropagation();">
-    <img id="map" src="assets/mapCentered.png"/>
-    <div class="red-dot-outer">
-    </div>
-    <div class="red-dot-inner">
+    <img id="map" src="assets/mapCenteredSquared.png"/>
+    <div id="mini-map-point" class="map-point">
+      <div class="red-dot-outer">
+      </div>
+      <div class="red-dot-inner">
+      </div>
     </div>
   </div>
   <img class="resize-icon" src="assets/resize.png" onclick="fullMapClick();" onmousedown="preventEventPropagation();" />
 	
   <div class="full-map-box" onmousedown="preventEventPropagation();">
     <img id="full-map" src="assets/mapFullCentered.png"/>
-    <div id="full-map-point" class="full-map-point">
+    <div id="full-map-point" class="map-point">
       <div class="red-dot-outer">
       </div>
       <div class="red-dot-inner">

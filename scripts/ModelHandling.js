@@ -212,7 +212,7 @@ function addSkydome(){
 function loadColladaModel(spinnerClass, overlayClass, topoId){
   var loader = new THREE.ColladaLoader();
   loader.options.convertUpAxis = true;
-  loader.load( 'assets/model.dae', function ( collada ) {
+  /*loader.load( 'assets/model.dae', function ( collada ) {
     daeModel = collada.scene;
     
     daeModel.traverse(function(child){
@@ -231,9 +231,15 @@ function loadColladaModel(spinnerClass, overlayClass, topoId){
     $(spinnerClass).hide();
     $(overlayClass).hide(); 
     $(topoId).slideDown( "fast");
-  });
+  });*/
   
   addSavedMarkersToScene();
+  
+    animate();
+    $(spinnerClass).hide();
+    $(overlayClass).hide(); 
+    $(topoId).slideDown( "fast");
+  
 }
 
 // Add Markers to the scene

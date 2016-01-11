@@ -48,322 +48,356 @@ var markers = [];
 
 
 // -------------------- Scene & model initialization --------------------
+
 // Init base scene
 function createBaseScene(editmode) {
-  clock = new THREE.Clock();
-  scene = new THREE.Scene();
-  windowWidth = window.innerWidth;
-  windowHeight = window.innerHeight;
-  renderer = new THREE.WebGLRenderer({antialias:true});
-  renderer.setSize(windowWidth, windowHeight);
-  document.body.appendChild(renderer.domElement);
-  camera = new THREE.PerspectiveCamera(45, windowWidth / windowHeight, 0.1, 10000);
-  camera.position.set(BASE_CAM_POSITION[0],BASE_CAM_POSITION[1],BASE_CAM_POSITION[2]);
-  fpvCam = [camera.position.x, camera.position.y, camera.position.z];
-  orbitCam = [camera.position.x, camera.position.y, camera.position.z];
-  camera.lookAt(new THREE.Vector3(1, 1, 1));
-  scene.add(camera);
+	clock = new THREE.Clock();
+	// Create three.js Scene
+	scene = new THREE.Scene();
+	
+	windowWidth = window.innerWidth;
+	windowHeight = window.innerHeight;
+	renderer = new THREE.WebGLRenderer({antialias:true});
+	renderer.setSize(windowWidth, windowHeight);
+	document.body.appendChild(renderer.domElement);
+	camera = new THREE.PerspectiveCamera(45, windowWidth / windowHeight, 0.1, 10000);
+	camera.position.set(BASE_CAM_POSITION[0],BASE_CAM_POSITION[1],BASE_CAM_POSITION[2]);
+	fpvCam = [camera.position.x, camera.position.y, camera.position.z];
+	orbitCam = [camera.position.x, camera.position.y, camera.position.z];
+	camera.lookAt(new THREE.Vector3(1, 1, 1));
+	scene.add(camera);
   
-  window.addEventListener('resize', function() {
-    windowWidth = window.innerWidth;
-    windowHeight = window.innerHeight;
-    renderer.setSize(windowWidth, windowHeight);
-    camera.aspect = windowWidth / windowHeight;
-    camera.updateProjectionMatrix();
-  });
+    // Handle size and ration on window resize
+	window.addEventListener('resize', function() {
+		windowWidth = window.innerWidth;
+		windowHeight = window.innerHeight;
+		renderer.setSize(windowWidth, windowHeight);
+		camera.aspect = windowWidth / windowHeight;
+		camera.updateProjectionMatrix();
+	});
   
-  this.editmode = editmode;
-  if(editmode){
-    $( document ).keypress(function(e) {
-      if(e.keyCode != 32)
-        return;
-        
-      clickInfo.userHasClicked = true;
-      clickInfo.x = currentMousePos.x;
-      clickInfo.y = currentMousePos.y;
-    });
+	// Set if Edit Mode or not
+	this.editmode = editmode;
+	
+	if(editmode){
+		$( document ).keypress(function(e) {
+			if(e.keyCode != 32)
+				return;
+			
+			// If user presses space, save x & y
+			clickInfo.userHasClicked = true;
+			clickInfo.x = currentMousePos.x;
+			clickInfo.y = currentMousePos.y;
+		});
     
-    $(document).mousemove(function(event) {
-        currentMousePos.x = event.pageX;
-        currentMousePos.y = event.pageY;
-    });
-  } else {
-    window.addEventListener('click', function (evt) {
-      clickInfo.userHasClicked = true;
-      clickInfo.x = evt.clientX;
-      clickInfo.y = evt.clientY;
-    }, false);
-  }
+		$(document).mousemove(function(event) {
+			// Always save current mouse position
+			currentMousePos.x = event.pageX;
+			currentMousePos.y = event.pageY;
+		});
+	} else {
+		window.addEventListener('click', function (evt) {
+			clickInfo.userHasClicked = true;
+			clickInfo.x = evt.clientX;
+			clickInfo.y = evt.clientY;
+		}, false);
+	}
 }
 
 // Add ligths to scene
 function addDirectinalLights(){
-  dirLight = new THREE.DirectionalLight( 0xffffff, 1 );
-  dirLight.color.setHSL( 0.1, 1, 0.95 );
-  dirLight.position.set( -1, 1.75, 1 );
-  dirLight.position.multiplyScalar( 50 );
-  scene.add( dirLight );
+	dirLight = new THREE.DirectionalLight( 0xffffff, 1 );
+	dirLight.color.setHSL( 0.1, 1, 0.95 );
+	dirLight.position.set( -1, 1.75, 1 );
+	dirLight.position.multiplyScalar( 50 );
+	scene.add( dirLight );
 
-  dirLight.castShadow = true;
+	dirLight.castShadow = true;
 
-  dirLight.shadowMapWidth = 2048;
-  dirLight.shadowMapHeight = 2048;
+	dirLight.shadowMapWidth = 2048;
+	dirLight.shadowMapHeight = 2048;
 
-  var d = 50;
+	var d = 50;
 
-  dirLight.shadowCameraLeft = -d;
-  dirLight.shadowCameraRight = d;
-  dirLight.shadowCameraTop = d;
-  dirLight.shadowCameraBottom = -d;
+	dirLight.shadowCameraLeft = -d;
+	dirLight.shadowCameraRight = d;
+	dirLight.shadowCameraTop = d;
+	dirLight.shadowCameraBottom = -d;
 
-  dirLight.shadowCameraFar = 3500;
-  dirLight.shadowBias = -0.0001;
-  dirLight.shadowDarkness = 0.35;
+	dirLight.shadowCameraFar = 3500;
+	dirLight.shadowBias = -0.0001;
+	dirLight.shadowDarkness = 0.35;
 }
 
-// Add three point light to the scene
+// Add three point lights to the scene
 function addThreePointLighting(){
-  var d = 50;
-  dirLight = new THREE.DirectionalLight( 0xffffff, 1 );
-  dirLight.color.setHSL( 0.1, 1, 0.95 );
-  dirLight.position.set( -1, 1.75, 1 );
-  dirLight.position.multiplyScalar( 50 );
-  scene.add( dirLight );
-  
-  dirLight.castShadow = true;
-  dirLight.shadowMapWidth = 2048;
-  dirLight.shadowMapHeight = 2048;
-  dirLight.shadowCameraLeft = -d;
-  dirLight.shadowCameraRight = d;
-  dirLight.shadowCameraTop = d;
-  dirLight.shadowCameraBottom = -d;
-  dirLight.shadowCameraFar = 3500;
-  dirLight.shadowBias = -0.0001;
-  dirLight.shadowDarkness = 0.35;
-  
-  dirLight = new THREE.DirectionalLight( 0xffffff, 1 );
-  dirLight.color.setHSL( 0.1, 1, 0.95 );
-  dirLight.position.set( 1, -1.75, 1 );
-  dirLight.position.multiplyScalar( 50 );
-  scene.add( dirLight );
-  
-  dirLight.castShadow = true;
-  dirLight.shadowMapWidth = 2048;
-  dirLight.shadowMapHeight = 2048;
-  dirLight.shadowCameraLeft = -d;
-  dirLight.shadowCameraRight = d;
-  dirLight.shadowCameraTop = d;
-  dirLight.shadowCameraBottom = -d;
-  dirLight.shadowCameraFar = 3500;
-  dirLight.shadowBias = -0.0001;
-  dirLight.shadowDarkness = 0.35;
-  
-  dirLight = new THREE.DirectionalLight( 0xffffff, 1 );
-  dirLight.color.setHSL( 0.1, 1, 0.95 );
-  dirLight.position.set( 1, -1.75, -1 );
-  dirLight.position.multiplyScalar( 50 );
-  scene.add( dirLight );
-  
-  dirLight.castShadow = true;
-  dirLight.shadowMapWidth = 2048;
-  dirLight.shadowMapHeight = 2048;
-  dirLight.shadowCameraLeft = -d;
-  dirLight.shadowCameraRight = d;
-  dirLight.shadowCameraTop = d;
-  dirLight.shadowCameraBottom = -d;
-  dirLight.shadowCameraFar = 3500;
-  dirLight.shadowBias = -0.0001;
-  dirLight.shadowDarkness = 0.35;
+	var d = 50;
+	dirLight = new THREE.DirectionalLight( 0xffffff, 1 );
+	dirLight.color.setHSL( 0.1, 1, 0.95 );
+	dirLight.position.set( -1, 1.75, 1 );
+	dirLight.position.multiplyScalar( 50 );
+	scene.add( dirLight );
+	
+	dirLight.castShadow = true;
+	dirLight.shadowMapWidth = 2048;
+	dirLight.shadowMapHeight = 2048;
+	dirLight.shadowCameraLeft = -d;
+	dirLight.shadowCameraRight = d;
+	dirLight.shadowCameraTop = d;
+	dirLight.shadowCameraBottom = -d;
+	dirLight.shadowCameraFar = 3500;
+	dirLight.shadowBias = -0.0001;
+	dirLight.shadowDarkness = 0.35;
+	
+	dirLight = new THREE.DirectionalLight( 0xffffff, 1 );
+	dirLight.color.setHSL( 0.1, 1, 0.95 );
+	dirLight.position.set( 1, -1.75, 1 );
+	dirLight.position.multiplyScalar( 50 );
+	scene.add( dirLight );
+	
+	dirLight.castShadow = true;
+	dirLight.shadowMapWidth = 2048;
+	dirLight.shadowMapHeight = 2048;
+	dirLight.shadowCameraLeft = -d;
+	dirLight.shadowCameraRight = d;
+	dirLight.shadowCameraTop = d;
+	dirLight.shadowCameraBottom = -d;
+	dirLight.shadowCameraFar = 3500;
+	dirLight.shadowBias = -0.0001;
+	dirLight.shadowDarkness = 0.35;
+	
+	dirLight = new THREE.DirectionalLight( 0xffffff, 1 );
+	dirLight.color.setHSL( 0.1, 1, 0.95 );
+	dirLight.position.set( 1, -1.75, -1 );
+	dirLight.position.multiplyScalar( 50 );
+	scene.add( dirLight );
+	
+	dirLight.castShadow = true;
+	dirLight.shadowMapWidth = 2048;
+	dirLight.shadowMapHeight = 2048;
+	dirLight.shadowCameraLeft = -d;
+	dirLight.shadowCameraRight = d;
+	dirLight.shadowCameraTop = d;
+	dirLight.shadowCameraBottom = -d;
+	dirLight.shadowCameraFar = 3500;
+	dirLight.shadowBias = -0.0001;
+	dirLight.shadowDarkness = 0.35;
 
 }
 
 // Add ground to scene
 function addGround(color){
-  var groundGeo = new THREE.PlaneBufferGeometry( 10000, 10000 );
-  var groundMat = new THREE.MeshPhongMaterial( { color: 0xffffff, specular: 0x050505 } );
-  groundMat.color = new THREE.Color( color );
-
-  var ground = new THREE.Mesh( groundGeo, groundMat );
-  ground.rotation.x = -Math.PI/2;
-  ground.position.y = -33;
-  scene.add( ground );
+	var groundGeo = new THREE.PlaneBufferGeometry( 10000, 10000 );
+	var groundMat = new THREE.MeshPhongMaterial( { color: 0xffffff, specular: 0x050505 } );
+	groundMat.color = new THREE.Color( color );
+	
+	var ground = new THREE.Mesh( groundGeo, groundMat );
+	ground.rotation.x = -Math.PI/2;
+	ground.position.y = -33;
+	scene.add( ground );
 }
-
 
 // Add skydome to scene
 function addSkydome(){
-  var vertexShader = document.getElementById( 'vertexShader' ).textContent;
-  var fragmentShader = document.getElementById( 'fragmentShader' ).textContent;
-  var uniforms = {
-  topColor: 	 { type: "c", value: new THREE.Color( 0x0077ff ) },
-  bottomColor: { type: "c", value: new THREE.Color( 0xffffff ) },
-  offset:		 { type: "f", value: 33 },
-  exponent:	 { type: "f", value: 0.6 }
-  };
-
-  var skyGeo = new THREE.SphereGeometry( 4000, 32, 15 );
-  var skyMat = new THREE.ShaderMaterial( { vertexShader: vertexShader, fragmentShader: fragmentShader, uniforms: uniforms, side: THREE.BackSide } );
-
-  var sky = new THREE.Mesh( skyGeo, skyMat );
-  scene.add( sky );
+	var vertexShader = document.getElementById( 'vertexShader' ).textContent;
+	var fragmentShader = document.getElementById( 'fragmentShader' ).textContent;
+	var uniforms = {
+		topColor: 	 { type: "c", value: new THREE.Color( 0x0077ff ) },
+		bottomColor: { type: "c", value: new THREE.Color( 0xffffff ) },
+		offset:		 { type: "f", value: 33 },
+		exponent:	 { type: "f", value: 0.6 }
+	};
+	
+	var skyGeo = new THREE.SphereGeometry( 4000, 32, 15 );
+	var skyMat = new THREE.ShaderMaterial( { vertexShader: vertexShader, fragmentShader: fragmentShader, uniforms: uniforms, side: THREE.BackSide } );
+	
+	var sky = new THREE.Mesh( skyGeo, skyMat );
+	scene.add( sky );
 }
 
 // Load collada model and add to scene
 function loadColladaModel(spinnerClass, overlayClass, topoId){
-  var loader = new THREE.ColladaLoader();
-  loader.options.convertUpAxis = true;
-  /*loader.load( 'assets/model.dae', function ( collada ) {
-    daeModel = collada.scene;
-    
-    daeModel.traverse(function(child){
-      if (child instanceof THREE.Mesh){        
-        child.material.side = THREE.DoubleSide;        
-      }        
-    });          
-    
-    
-    var skin = collada.skins[ 0 ];
-    daeModel.position.set(0,0,0);
-    daeModel.scale.set(1.5,1.5,1.5);
-    scene.add(daeModel);
-    
-    animate();
-    $(spinnerClass).hide();
-    $(overlayClass).hide(); 
-    $(topoId).slideDown( "fast");
-  });*/
-  
-  addSavedMarkersToScene();
-  
-    animate();
-    $(spinnerClass).hide();
-    $(overlayClass).hide(); 
-    $(topoId).slideDown( "fast");
+	// Create new collada loader - can be replaced
+	var loader = new THREE.ColladaLoader();
+	loader.options.convertUpAxis = true;
+	loader.load( 'assets/model.dae', function ( collada ) {
+		daeModel = collada.scene;
+		
+		// Always show both sides of mesh (Model has errors)
+		daeModel.traverse(function(child){
+			if (child instanceof THREE.Mesh){        
+				child.material.side = THREE.DoubleSide;        
+			}        
+		});          
+				
+		var skin = collada.skins[ 0 ];
+		daeModel.position.set(0,0,0);
+		daeModel.scale.set(1.5,1.5,1.5);
+		scene.add(daeModel);
+		
+		animate();
+		
+		// Hide the spinner and overlay. Show topobox
+		$(spinnerClass).hide();
+		$(overlayClass).hide(); 
+		$(topoId).slideDown( "fast");
+	});
+	
+	addSavedMarkersToScene();
+	
+	animate();
+	$(spinnerClass).hide();
+	$(overlayClass).hide(); 
+	$(topoId).slideDown( "fast");
   
 }
 
 // Add Markers to the scene
 function addSavedMarkersToScene(){
-  var text = readTextFile(MARKERS_FILENAME);
-  if(text == "")
-    return;
-  var savedMarkers = JSON.parse(text);
-  $.each(savedMarkers, function (index, value){
-    var marker = new THREE.Mesh(new THREE.SphereGeometry(5), new THREE.MeshLambertMaterial({ color: 0xff0000 }));
-    marker.position.x = value.position.x;
-    marker.position.y = value.position.y;
-    marker.position.z = value.position.z;
-    marker.name = value.name;
-    markers.push(marker);
-    scene.add(marker);
-  });
+	// Get markers from File
+	var text = readTextFile(MARKERS_FILENAME);
+	
+	if(text == "")
+		return;
+	
+	// Parse to array
+	var savedMarkers = JSON.parse(text);
+	
+	$.each(savedMarkers, function (index, value){
+		// Create new Sphere Mesh at position from file
+		var marker = new THREE.Mesh(new THREE.SphereGeometry(5), new THREE.MeshLambertMaterial({ color: 0xff0000 }));
+		marker.position.x = value.position.x;
+		marker.position.y = value.position.y;
+		marker.position.z = value.position.z;
+		marker.name = value.name;
+		
+		// Add marker from file to local array
+		markers.push(marker);
+		
+		// Add marker from file to scene
+		scene.add(marker);
+	});
 }
 
+// Read the Json Markers from File
 function readTextFile(file){
-  var rawFile = new XMLHttpRequest();
-  var text = "";
-  rawFile.open("GET", file, false);
-  rawFile.onreadystatechange = function ()
-  {
-    if(rawFile.readyState === 4)
-    {
-      if(rawFile.status === 200 || rawFile.status == 0)
-      {
-        text = rawFile.responseText;
-      }
-    }
-  }
-  rawFile.send(null);
-  return text;
+	// Get File from XMLHttpRequest
+	var rawFile = new XMLHttpRequest();
+	var text = "";
+	rawFile.open("GET", file, false);
+	// If reading successful, get responseText
+	rawFile.onreadystatechange = function ()
+	{
+		if(rawFile.readyState === 4)
+		{
+			if(rawFile.status === 200 || rawFile.status == 0)
+			{
+				text = rawFile.responseText;
+			}
+		}
+	}
+	rawFile.send(null);
+	
+	// Return the Json String
+	return text;
 }
+
+// -----------------------------------------------------
 
 // -------------------- Controllers --------------------
+
 // Set orbit contorls
 function setOrbitControls(restoreCam){  
-  if(restoreCam)
-    restoreOrbitCam();
-  
-  if(controls != undefined)
-    controls.dispose();
-    
-  controls = new THREE.OrbitControls(camera, renderer.domElement);
-  controls.maxPolarAngle = Math.PI/2;
-  controls.maxDistance = 2500;
-  
-  currentControl = CAM_ORBIT;
+	if(restoreCam)
+		restoreOrbitCam();
+	
+	if(controls != undefined)
+		controls.dispose();
+		
+	// Create new Orbit Controller
+	controls = new THREE.OrbitControls(camera, renderer.domElement);
+	// Set maxPolarAngle and maxDistance, that user can't get out of skybox
+	controls.maxPolarAngle = Math.PI/2;
+	controls.maxDistance = 2500;
+	
+	currentControl = CAM_ORBIT;
 }
 
 // Reset orbit camera position
 function restoreOrbitCam(){
-  fpvCam = [camera.position.x, camera.position.y, camera.position.z];
-  camera.position.set(orbitCam[0],orbitCam[1],orbitCam[2]);
-  camera.lookAt(new THREE.Vector3(1, 1, 1));  
+	fpvCam = [camera.position.x, camera.position.y, camera.position.z];
+	camera.position.set(orbitCam[0],orbitCam[1],orbitCam[2]);
+	camera.lookAt(new THREE.Vector3(1, 1, 1));  
 }
 
 // Set FPV controller
 function setFPVControls(restoreCam){
-  if(restoreCam)
-    restoreFPVCam();
-  
-  if(controls != undefined)
-    controls.dispose();
-    
-  controls = new THREE.FirstPersonControls(camera);
-  controls.lookSpeed = 0.12;
-  controls.movementSpeed = 250;
-  controls.noFly = true;
-  controls.flightModeWithClick = true;
-  controls.lookVertical = true;
-  controls.constrainVertical = false;
-  controls.blockUpDown = true;
-  controls.verticalMin = 1.0;
-  controls.verticalMax = 2.0;
-  controls.lon = 300;
-  controls.lat = -20;
-  
-  currentControl = CAM_FPV;
+	if(restoreCam)
+		restoreFPVCam();
+	
+	if(controls != undefined)
+		controls.dispose();
+		
+	controls = new THREE.FirstPersonControls(camera);
+	controls.lookSpeed = 0.12;
+	controls.movementSpeed = 250;
+	controls.noFly = true;
+	controls.flightModeWithClick = true;
+	controls.lookVertical = true;
+	controls.constrainVertical = false;
+	controls.blockUpDown = true;
+	controls.verticalMin = 1.0;
+	controls.verticalMax = 2.0;
+	controls.lon = 300;
+	controls.lat = -20;
+	
+	currentControl = CAM_FPV;
 }
 
 // Reset FPV camera
 function restoreFPVCam(){
-  orbitCam = [camera.position.x, camera.position.y, camera.position.z];
-  camera.position.set(fpvCam[0],fpvCam[1],fpvCam[2]);
-  camera.lookAt(new THREE.Vector3(1, 1, 1));  
+	orbitCam = [camera.position.x, camera.position.y, camera.position.z];
+	camera.position.set(fpvCam[0],fpvCam[1],fpvCam[2]);
+	camera.lookAt(new THREE.Vector3(1, 1, 1));  
 }
 
 // Save and restore camera position on controller change
 function resetCameraPositionOnModel(){
-  camera.position.set(BASE_CAM_POSITION[0],BASE_CAM_POSITION[1],BASE_CAM_POSITION[2]);
-  camera.lookAt(new THREE.Vector3(1, 1, 1));  
-  
-  if(currentControl == CAM_ORBIT){
-    setOrbitControls(false);    
-  } else if(currentControl == CAM_FPV){
-    setFPVControls(false);
-  }    
+	camera.position.set(BASE_CAM_POSITION[0],BASE_CAM_POSITION[1],BASE_CAM_POSITION[2]);
+	camera.lookAt(new THREE.Vector3(1, 1, 1));  
+	
+	if(currentControl == CAM_ORBIT){
+		setOrbitControls(false);    
+	} else if(currentControl == CAM_FPV){
+		setFPVControls(false);
+	}    
 }
-
 
 // Animate scene
 function animate() {
-  var updateControls = true;
-  if(editmode)
-    setBoxOnUserClick();
-  else
-    updateControls = detectIfMarkerClicked();
-    
-  renderer.clear();
-  requestAnimationFrame(animate);
-  renderer.render(scene, camera);
-  
-  if(updateControls){
-    updateMap();
-    detectCollision();
-    controls.update(clock.getDelta());
-  }
+	var updateControls = true;
+	
+	if(editmode)
+		setBoxOnUserClick();
+	else
+		updateControls = detectIfMarkerClicked();
+		
+	renderer.clear();
+	requestAnimationFrame(animate);
+	renderer.render(scene, camera);
+	
+	// Update the minimap and detect the collisions (only fpv mode)
+	if(updateControls){
+		updateMap();
+		detectCollision();
+		controls.update(clock.getDelta());
+	}
 }
 
+// ------------------------------------------------------
+
 // -------------------- Map handling --------------------
+
 // Calculate values used for map
 function calculateMapValues(width){
   mapWidth = 960;
@@ -416,35 +450,44 @@ function updateMap(){
   $('#full-map-point').css('margin-bottom',  marginYFull + 'px');
 }
 
+// ----------------------------------------------------------
 
 // -------------------- Marker detection --------------------
+
+// Check if user click hit a marker
 function detectIfMarkerClicked(){
-  if (!clickInfo.userHasClicked) {
-    return true;
-  }
-  clickInfo.userHasClicked = false;
-
-  var mouse = new THREE.Vector2();
-  mouse.x = ( clickInfo.x / windowWidth ) * 2 - 1;
-  mouse.y = -( clickInfo.y / windowHeight ) * 2 + 1;
-  raycaster.setFromCamera( mouse, camera );
-  
-  var intersects = raycaster.intersectObjects(markers, true);
-  if (intersects.length > 0) {
-    console.log(intersects[0].object.name);
-    showContentOverlay(intersects[0].object.name);
-    return false;
-  }
-  return true;
+	if (!clickInfo.userHasClicked) {
+		return true;
+	}
+	clickInfo.userHasClicked = false;
+	
+	// Shoot ray from center of screen to the mouse position
+	var mouse = new THREE.Vector2();
+	mouse.x = ( clickInfo.x / windowWidth ) * 2 - 1;
+	mouse.y = -( clickInfo.y / windowHeight ) * 2 + 1;
+	raycaster.setFromCamera( mouse, camera );
+	
+	// Check if the ray intersected with a marker object
+	var intersects = raycaster.intersectObjects(markers, true);
+	if (intersects.length > 0) {
+		console.log(intersects[0].object.name);
+		// Show Overlay of Marker if successful hit
+		showContentOverlay(intersects[0].object.name);
+		return false;
+	}
+	return true;
 }
 
+// Load html file with the same name as the marker in content div
 function showContentOverlay(markerName){
-  $( "#content" ).load( "content/" + markerName + ".html" );
-  $( "#content-container" ).fadeIn( 300 );
+	$( "#content" ).load( "content/" + markerName + ".html" );
+	$( "#content-container" ).fadeIn( 300 );
 }
 
+// -------------------------------------------------------------
 
 // -------------------- Collision detection --------------------
+
 // Detect collision
 function detectCollision(){
   resetBlockings();
@@ -488,7 +531,6 @@ function detectCollision(){
     detectL();
     return;
   }
- 
 }
 
 // Reset block direction from previous collision detection
@@ -554,74 +596,93 @@ function detectBL(){
 
 // Detect collsion using a vector
 function detectCollisionUsingVector(x, y, z){
-  var cameraDirection = new THREE.Vector3( x, y, z );
-  cameraDirection.applyQuaternion( camera.quaternion );
-  
-  var rayCaster = new THREE.Raycaster(camera.position, cameraDirection);    
-  var intersects = rayCaster.intersectObject(daeModel, true);   
-  return (intersects.length > 0 && intersects[0].distance < 25);
+	// Create Vector in the direction of the movement
+	var cameraDirection = new THREE.Vector3( x, y, z );
+	cameraDirection.applyQuaternion( camera.quaternion );
+	
+	var rayCaster = new THREE.Raycaster(camera.position, cameraDirection);    
+	var intersects = rayCaster.intersectObject(daeModel, true);   
+	return (intersects.length > 0 && intersects[0].distance < 25);
 }
 
+// --------------------------------------------------------------------
 
 // -------------------- EDITMODE: Add marker boxes --------------------
+
 // Get coordinates to add marker
 function setBoxOnUserClick(){
-  if (!clickInfo.userHasClicked) {
-    return;
-  }
-  clickInfo.userHasClicked = false;
-
-  var mouse = new THREE.Vector2();
-  mouse.x = ( clickInfo.x / windowWidth ) * 2 - 1;
-  mouse.y = -( clickInfo.y / windowHeight ) * 2 + 1;
-  raycaster.setFromCamera( mouse, camera );
-  
-  var intersects = raycaster.intersectObject(daeModel, true);
-  if (intersects.length > 0) {
-    showAddMarkerDialog(intersects[0].point);
-  }
+	// Check if user has clicked - keypress function
+	if (!clickInfo.userHasClicked) {
+		return;
+	}
+	
+	// Reset click if user clicked
+	clickInfo.userHasClicked = false;
+	
+	// Shoot ray from center of screen to the mouse position
+	var mouse = new THREE.Vector2();
+	mouse.x = ( clickInfo.x / windowWidth ) * 2 - 1;
+	mouse.y = -( clickInfo.y / windowHeight ) * 2 + 1;
+	raycaster.setFromCamera( mouse, camera );
+	
+	// If Ray intersects the 3D Model show Marker Dialog
+	var intersects = raycaster.intersectObject(daeModel, true);
+	if (intersects.length > 0) {
+		showAddMarkerDialog(intersects[0].point);
+	}
 }
 
 // Show marker dialog
 function showAddMarkerDialog(point){
-  bootbox.prompt("Bitte geben Sie dem Marker einen Namen", function(result) {    
-    if (result === null || result.length == 0) {    
-      return;                                        
-    } else {      
-      addMarkerToModel(point, result);               
-    }
-  });
+	// Show bootbox dialog to name the marker
+	bootbox.prompt("Bitte geben Sie dem Marker einen Namen", function(result) {    
+		if (result === null || result.length == 0) {    
+			return;                                        
+		} else {      
+			addMarkerToModel(point, result);               
+		}
+	});
 }
 
 // Add marker to scene
 function addMarkerToModel(point, name){
+	// Create new Sphere at x,y,z position
     var marker = new THREE.Mesh(new THREE.SphereGeometry(5), new THREE.MeshLambertMaterial({ color: 0xff0000 }));
     marker.position.x = point.x;
     marker.position.y = point.y;
     marker.position.z = point.z;
     marker.name = name;
+	
+	// Write marker to file
     addMarkerToFile(marker);
+	
+	// Add marker mesh to scene
     scene.add(marker);
 }
 
-// Save markers to file
+// Write marker to the file
 function addMarkerToFile(marker){
-  markers.push(marker);
-  var objectsToSave = [];
-  $.each(markers, function(index, value){
-    objectsToSave.push({name: value.name, position: value.position});
-  });
-  var serializedMarkers = JSON.stringify(objectsToSave);
-  
-  $.ajax({
-    url: "scripts/fwrite.php",
-    //data, an url-like string for easy access serverside
-    data: { obj: serializedMarkers },
-    dataType: "json",
-    cache: false,
-    async: true,
-    type: 'post',
-    timeout : 5000,
-  });
+	// Add marker to marker array
+	markers.push(marker);
+	
+	var objectsToSave = [];
+	$.each(markers, function(index, value){
+		objectsToSave.push({name: value.name, position: value.position});
+	});
+	
+	// Serialize Array to JSON
+	var serializedMarkers = JSON.stringify(objectsToSave);
+	
+	// Start ajax request which calls php filewriter function (Javascript can't access filesystem)
+	$.ajax({
+		url: "scripts/fwrite.php",
+		data: { obj: serializedMarkers },
+		dataType: "json",
+		cache: false,
+		async: true,
+		type: 'post',
+		timeout : 5000,
+	});
 }
 
+// --------------------------------------------------------------------

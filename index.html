@@ -1,477 +1,486 @@
 <!DOCTYPE html>
 <html>
+	<head>
+		<meta charset=utf-8>
+		<title>Homburg 3D</title>
 
-<head>
-  <meta charset=utf-8>
-  <title>Homburg 3D</title>
-  <!-- fb meta -->
-  <meta property="og:title" content="Testtest" />
-  <meta property="og:type" content="website" />
-  <meta property="og:url" content="http://kurtnoble.com/labs/rrssb/index.html" />
-  <meta property="og:image" content="http://kurtnoble.com/labs/rrssb/media/facebook-share.jpg" />
-  <meta property="og:description" content="Blabla" />
+		<!-- CSS -->
+		<link rel="stylesheet" type="text/css" href="css/style.css">
+		<link rel="stylesheet" href="css/rrssb.css" />
+		<link href='https://fonts.googleapis.com/css?family=Lato:400,300|Roboto:400,300' rel='stylesheet' type='text/css'>
 
-  <!-- twitter meta -->
-  <meta name="twitter:card" content="summary_large_image">
-  <meta name="twitter:site" content="@therealkni">
-  <meta name="twitter:creator" content="@dbox">
-  <meta name="twitter:title" content="Ridiculously Responsive Social Sharing Buttons">
-  <meta name="twitter:description" content="Ridiculously Responsive Social Sharing Buttons by @dbox and @joshuatuscan: http://kurtnoble.com/labs/rrssb | http://kurtnoble.com/labs/rrssb/media/rrssb-preview.png">
-  <meta name="twitter:image" content="http://kurtnoble.com/labs/rrssb/media/rrssb-preview.png">
+		<!-- jQuery scripts -->
+		<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.2/jquery.min.js"></script>
+		<script src="https://ajax.googleapis.com/ajax/libs/jqueryui/1.11.4/jquery-ui.min.js"></script>
 
+		<!-- helper scripts -->
+		<script src="scripts/sliiide.min.js"></script>
+		<script src="scripts/rrssb.min.js"></script>
+		<script src="scripts/json.js"></script>
 
-  <!-- CSS -->
-  <link rel="stylesheet" type="text/css" href="css/style.css">
-  <link rel="stylesheet" href="css/rrssb.css" />
-  <link href='https://fonts.googleapis.com/css?family=Lato:400,300|Roboto:400,300' rel='stylesheet' type='text/css'>
+		<!-- Three.js scripts -->
+		<script src="scripts/three.js"></script>
+		<script src="scripts/ColladaLoader.js"></script>
+		<script src="scripts/OrbitControls.js"></script>
+		<script src="scripts/FirstPersonControls.js"></script>
+		<script src="scripts/ModelHandling.js"></script>
 
-  <!-- jQuery scripts -->
-  <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.2/jquery.min.js"></script>
-  <script src="https://ajax.googleapis.com/ajax/libs/jqueryui/1.11.4/jquery-ui.min.js"></script>
+		<!-- Shaders -->
+		<script type="x-shader/x-vertex" id="vertexShader">
+			varying vec3 vWorldPosition; void main() { vec4 worldPosition = modelMatrix * vec4( position, 1.0 ); vWorldPosition = worldPosition.xyz;
+			gl_Position = projectionMatrix * modelViewMatrix * vec4( position, 1.0 ); }
+		</script>
+		<script type="x-shader/x-fragment" id="fragmentShader">
+			uniform vec3 topColor; uniform vec3 bottomColor; uniform float offset; uniform float exponent; varying vec3 vWorldPosition;
+			void main() { float h = normalize( vWorldPosition + offset ).y; gl_FragColor = vec4( mix( bottomColor, topColor, max(
+			pow( max( h , 0.0), exponent ), 0.0 ) ), 1.0 ); }
+		</script>
 
-  <!-- helper scripts -->
-  <script src="scripts/sliiide.min.js"></script>
-  <script src="scripts/rrssb.min.js"></script>
-  <script src="scripts/json.js"></script>
-
-  <!-- Three.js scripts -->
-  <script src="scripts/three.js"></script>
-  <script src="scripts/ColladaLoader.js"></script>
-  <script src="scripts/OrbitControls.js"></script>
-  <script src="scripts/FirstPersonControls.js"></script>
-  <script src="scripts/ModelHandling.js"></script>
-
-
-
-
-  <!-- Shaders -->
-  <script type="x-shader/x-vertex" id="vertexShader">
-    varying vec3 vWorldPosition; void main() { vec4 worldPosition = modelMatrix * vec4( position, 1.0 ); vWorldPosition = worldPosition.xyz;
-    gl_Position = projectionMatrix * modelViewMatrix * vec4( position, 1.0 ); }
-  </script>
-  <script type="x-shader/x-fragment" id="fragmentShader">
-    uniform vec3 topColor; uniform vec3 bottomColor; uniform float offset; uniform float exponent; varying vec3 vWorldPosition;
-    void main() { float h = normalize( vWorldPosition + offset ).y; gl_FragColor = vec4( mix( bottomColor, topColor, max(
-    pow( max( h , 0.0), exponent ), 0.0 ) ), 1.0 ); }
-  </script>
-
-  <!-- Init -->
-  <script>
-    var settings = {
+		<!-- Init -->
+		<script>
+			// Settings for Sliiide.js Menu
+			var settings = {
 				toggle: "#toggle", // the selector for the menu toggle, whatever clickable element you want to activate or deactivate the menu. A click listener will be added to this element.
 				animation_duration: "0.3s", //how long it takes to slide the menu
 				place: "left", //where is the menu sliding from, possible options are (left | right | top | bottom)
 				animation_curve: "cubic-bezier(0.54, 0.01, 0.57, 1.03)", //animation curve for the sliding animation
 				body_slide: false, //set it to true if you want to use the effect where the entire page slides and not just the div
 				no_scroll: true, //set to true if you want the scrolling disabled while the menu is active
-      };
-      var orbitHelpShown = false;
-      var fpvHelpShown = false;
-      var topoVisible = true;
-	  
-      var menu;
+			};
+			var orbitHelpShown = false;
+			var fpvHelpShown = false;
+			var topoVisible = true;
+			var menu;
 			
-      $( document ).ready(function() {
-        menu = $('#main-sidebar').sliiide(settings);   
-            
-        // Init 3D Model  
-        createBaseScene();
-        addThreePointLighting();
-        addGround(0xA6A775);
-        addSkydome();
-        
-        startWithOrbit();       
-        loadColladaModel(".sk-folding-cube", "#overlay", "#topoBox");  
-        menu.activate();     
-      });	
-      
-      function startWithOrbit(){
-        setOrbitControls(false);
-        showOrbitHelp();
-        orbitHelpShown = true;
-        $('#orbitBtn').addClass("box_selected");    
-      }
-       
-      function startWithFPV(){
-        setFPVControls(false);
-        showFPVHelp();
-        fpvHelpShown = true;
-        $('#fpvBtn').addClass("box_selected");
-      } 
-        
-      function showAbout(){
-        $( "#content" ).load( "content/about.html" );
-        $( "#content-container" ).fadeIn( 300 );     
-      }
-      
-      //-------- Help box handling---------
-      function toggleHelpClick(){
-        if(currentControl == CAM_FPV){
-          toggleFPVHelp();
-        } else if(currentControl == CAM_ORBIT){
-          toggleOrbitHelp();
-        }
-      }
-      
-      function toggleOrbitHelp(){
-        $("#helpOrbit").fadeToggle(500, function(){
-          if($("#helpOrbit").is(":visible")){
-            hideQuestionMark();
-          } else {
-            showQuestionMark();
-          }
-        });
-      }
-      
-      function showOrbitHelp(){
-        $("#helpOrbit").fadeIn(300);
-        hideQuestionMark();
-      }
-      
-      function hideOrbitHelp(){
-        $("#helpOrbit").hide();
-        showQuestionMark();
-      }
-      
-      function toggleFPVHelp(){
-        $("#helpFPV").fadeToggle(500, function(){
-          if($("#helpFPV").is(":visible")){
-            hideQuestionMark();
-          } else {
-            showQuestionMark();
-          }
-        });
-      }
-      
-      function showFPVHelp(){
-        $("#helpFPV").fadeIn(300);
-        hideQuestionMark();
-      }
-      
-      function hideFPVHelp(){
-        $("#helpFPV").hide();
-        showQuestionMark();
-      }
-      
-      function showQuestionMark(){
-        $("#closeHelp").hide();
-        $("#questionmark").show();
-      }
-      
-      function hideQuestionMark(){
-        $("#closeHelp").show();
-        $("#questionmark").hide();
-      }
-      
-      function showLocationBox(){
-        if(!topoVisible){
-          $("#topoBox").slideDown( "fast");
-          topoVisible = true;
-        }
-        preventEventPropagation();
-      }
-	  	          
-      //--------- Controls handling ---------
-      function orbitClick(){
-        if($('#orbitBtn').attr('class').includes("box_selected"))
-          return;
-          
-        $('#fpvBtn').removeClass("box_selected");
-        $('#orbitBtn').addClass("box_selected");    
-        menu.deactivate();    
-       
-        $( "#overlay" ).fadeIn( 500, function() {
-          setOrbitControls(true);
-          hideFPVHelp();
-           $( "#overlay" ).fadeOut( 500, function(){
-             if(!orbitHelpShown){
-               showFPVHelp();
-               orbitHelpShown = true;
-             }
-           });
-        }); 
-      }
-      
-      function fpvClick(){
-        if($('#fpvBtn').attr('class').includes("box_selected"))
-          return;
-          
-        $('#orbitBtn').removeClass("box_selected");
-        $('#fpvBtn').addClass("box_selected");
-        menu.deactivate();
-        
-        $( "#overlay" ).fadeIn( 500, function() {
-          setFPVControls(true);
-          hideOrbitHelp();
-           $( "#overlay" ).fadeOut( 500, function(){
-             if(!fpvHelpShown){
-               showFPVHelp();
-               fpvHelpShown = true;
-             }
-           });
-        });          
-      }
-      
-      $(document).keydown(function(e) {    
-          if (e.keyCode == 82) {
-            $( "#overlay" ).fadeIn( 200, function() {
-              resetCameraPositionOnModel();
-              $( "#overlay" ).fadeOut( 200 );
-            });      
-          }
-      });
-      
-      $(document).click(function(e){
-        if(topoVisible){
-          $("#topoBox").slideUp( "fast");
-          topoVisible = false;
-        }
-        menu.deactivate();
-      });
-      
-      //--------- Map handling ---------
-      function fullMapClick(){    
-        $( ".map-box" ).fadeOut( 100, function() {
-           $( ".full-map-box" ).fadeIn( 100, function(){
-           });
-        });     
-        $( ".resize-icon" ).fadeOut( 100, function() {
-           $( ".resize-icon-full" ).fadeIn( 100, function(){
-           });
-        });  
-        preventEventPropagation();      
-      }
-      
-      function smallMapClick(){    
-        $( ".full-map-box" ).fadeOut( 100, function() {
-           $( ".map-box" ).fadeIn( 100, function(){
-           });
-        });     
-        $( ".resize-icon-full" ).fadeOut( 100, function() {
-           $( ".resize-icon" ).fadeIn( 100, function(){
-           });
-        });    
-        preventEventPropagation();   
-      }
-      
-      //-------- Content overlay handling ------
-      function closeContent(){    
-        $( "#content-container" ).fadeOut( 100 );
-        preventEventPropagation();   
-      }
-              
-      function preventEventPropagation(){        
-        event.preventDefault();
-        event.stopPropagation();
-      }
-  </script>
-</head>
+			// Function on Page Load
+			$( document ).ready(function() {
+				menu = $('#main-sidebar').sliiide(settings);   
+				
+				// Init 3D Model  
+				createBaseScene();
+				addThreePointLighting();
+				addGround(0xA6A775);
+				addSkydome();
+			
+				// Set starting Controller - Default: Orbit
+				startWithOrbit();     
 
-<body>
-  <div class="sk-folding-cube">
-    <div class="sk-cube1 sk-cube"></div>
-    <div class="sk-cube2 sk-cube"></div>
-    <div class="sk-cube4 sk-cube"></div>
-    <div class="sk-cube3 sk-cube"></div>
-  </div>
+				// Load 3D Model
+				loadColladaModel(".sk-folding-cube", "#overlay", "#topoBox"); 
+				
+				// Show Sliiide Menu
+				menu.activate();     
+			});	
+		  
+			// Help Function Orbit Controller
+			function startWithOrbit(){
+				setOrbitControls(false);
+				showOrbitHelp();
+				orbitHelpShown = true;
+				$('#orbitBtn').addClass("box_selected");    
+			}
+		   
+			// Help Function FPV Controller
+			function startWithFPV(){
+				setFPVControls(false);
+				showFPVHelp();
+				fpvHelpShown = true;
+				$('#fpvBtn').addClass("box_selected");
+			} 
+			
+			function showAbout(){
+				$( "#content" ).load( "content/about.html" );
+				$( "#content-container" ).fadeIn( 300 );     
+			}
+		  
+			// ------------- Helpbox handling -------------
+			function toggleHelpClick(){
+				if(currentControl == CAM_FPV){
+					toggleFPVHelp();
+				} else if(currentControl == CAM_ORBIT){
+					toggleOrbitHelp();
+				}
+			}
+			
+			// Helpbox Orbit Controller
+			function toggleOrbitHelp(){
+				$("#helpOrbit").fadeToggle(500, function(){
+					if($("#helpOrbit").is(":visible")){
+						hideQuestionMark();
+					} else {
+						showQuestionMark();
+					}
+				});
+			}
+		  
+			function showOrbitHelp(){
+				$("#helpOrbit").fadeIn(300);
+				hideQuestionMark();
+			}
+		  
+			function hideOrbitHelp(){
+				$("#helpOrbit").hide();
+				showQuestionMark();
+			}
+		  
+		  
+			// Helpbox FPV Controller
+			function toggleFPVHelp(){
+				$("#helpFPV").fadeToggle(500, function(){
+					if($("#helpFPV").is(":visible")){
+						hideQuestionMark();
+					} else {
+						showQuestionMark();
+					}
+				});
+			}
+		  
+			function showFPVHelp(){
+				$("#helpFPV").fadeIn(300);
+				hideQuestionMark();
+			}
+		  
+			function hideFPVHelp(){
+				$("#helpFPV").hide();
+				showQuestionMark();
+			}
+		  
+		  
+			// Questionmark handling
+			function showQuestionMark(){
+				$("#closeHelp").hide();
+				$("#questionmark").show();
+			}
+		  
+			function hideQuestionMark(){
+				$("#closeHelp").show();
+				$("#questionmark").hide();
+			}
+		  
+			function showLocationBox(){
+				if(!topoVisible){
+					$("#topoBox").slideDown( "fast");
+					topoVisible = true;
+				}
+				preventEventPropagation();
+			}
+	 
+	 
+			// ------------- Controls handling -------------
+			
+			// Click Function Orbit Controller Select (Side Menu)
+			function orbitClick(){
+				if($('#orbitBtn').attr('class').includes("box_selected"))
+					return;
+			  
+				// Display Button with selected Class and hide menu
+				$('#fpvBtn').removeClass("box_selected");
+				$('#orbitBtn').addClass("box_selected");    
+				menu.deactivate();    
+		   
+				// Show overlay for a short time
+				$("#overlay" ).fadeIn( 500, function() {
+					setOrbitControls(true);
+					hideFPVHelp();
+					$( "#overlay" ).fadeOut( 500, function(){
+						if(!orbitHelpShown){
+							showFPVHelp();
+							orbitHelpShown = true;
+						}
+					});
+				}); 
+			}
+		  
+			// Click Function FPC Controller Select (Side Menu)
+			function fpvClick(){
+				if($('#fpvBtn').attr('class').includes("box_selected"))
+					return;
+			  
+				// Display Button with selected Class and hide menu
+				$('#orbitBtn').removeClass("box_selected");
+				$('#fpvBtn').addClass("box_selected");
+				menu.deactivate();
+			
+				// Show overlay for a short time
+				$( "#overlay" ).fadeIn( 500, function() {
+					setFPVControls(true);
+					hideOrbitHelp();
+					$("#overlay" ).fadeOut( 500, function(){
+						if(!fpvHelpShown){
+							showFPVHelp();
+							fpvHelpShown = true;
+						}
+					});
+				});          
+			}
+		  
+			// Keydown Function for Key 'R' (Reset)
+			$(document).keydown(function(e) {    
+				if (e.keyCode == 82) {
+					// Shows Overlay for a short time and resets camera to start view
+					$( "#overlay" ).fadeIn( 200, function() {
+						resetCameraPositionOnModel();
+						$( "#overlay" ).fadeOut( 200 );
+					});      
+				}
+			});
+		  
+			// Click Function for Topobox
+			$(document).click(function(e){
+				if(topoVisible){
+					$("#topoBox").slideUp( "fast");
+					topoVisible = false;
+				}
+				menu.deactivate();
+			});
+		  
+			// ------------- Map handling -------------
+			
+			// Display Big Map
+			function fullMapClick(){    
+				$( ".map-box" ).fadeOut( 100, function() {
+					$( ".full-map-box" ).fadeIn( 100, function(){});
+				});     
+			
+				$( ".resize-icon" ).fadeOut( 100, function() {
+					$( ".resize-icon-full" ).fadeIn( 100, function(){});
+				});  
+				
+				preventEventPropagation();      
+			}
+		  
+			// Display Small Map
+			function smallMapClick(){    
+				$( ".full-map-box" ).fadeOut( 100, function() {
+					$( ".map-box" ).fadeIn( 100, function(){});
+				});     
+				
+				$( ".resize-icon-full" ).fadeOut( 100, function() {
+					$( ".resize-icon" ).fadeIn( 100, function(){});
+				});    
+				
+				preventEventPropagation();   
+			}
+		  
+			// ------------- Content overlay handling -------------
+			
+			// Hide the Marker Content
+			function closeContent(){    
+				$( "#content-container" ).fadeOut( 100 );
+				preventEventPropagation();   
+			}
+			
+			// Prevent that Controller gets moved when user clicks on Button
+			function preventEventPropagation(){        
+				event.preventDefault();
+				event.stopPropagation();
+			}
+		</script>
+	</head>
 
+	<body>
+		<!-- Css Loader -->
+		<div class="sk-folding-cube">
+			<div class="sk-cube1 sk-cube"></div>
+			<div class="sk-cube2 sk-cube"></div>
+			<div class="sk-cube4 sk-cube"></div>
+			<div class="sk-cube3 sk-cube"></div>
+		</div>
 
-  <!-- div #main .main-content -->
-  <div id="main-navbar" class="main-navbar main-navbar-fixed-top">
-    <div class="main-navbar-content">
-      <div id="toggle-sidebar" class="icon left" onmousedown="preventEventPropagation();">
-        <img id="toggle" alt="menu" src="assets/menu32@64.png" width="24px" height="24px">
-      </div>
+		<!-- Top Navigation Bar / Menu-Button on the left / Questionmark on the right -->
+		<div id="main-navbar" class="main-navbar main-navbar-fixed-top">
+			<div class="main-navbar-content">
+				<div id="toggle-sidebar" class="icon left" onmousedown="preventEventPropagation();">
+					<img id="toggle" alt="menu" src="assets/menu32@64.png" width="24px" height="24px">
+				</div>
 
-      <div id="toggle-sidebar" class="icon right" onmousedown="preventEventPropagation();">
-        <img id="questionmark" alt="menu" onclick="toggleHelpClick()" src="assets/question.png" width="24px" height="24px">
-        <img id="closeHelp" alt="menu" onclick="toggleHelpClick()" src="assets/close_white.png" width="24px" height="24px">
-      </div>
-    </div>
-  </div>
+				<div id="toggle-sidebar" class="icon right" onmousedown="preventEventPropagation();">
+					<img id="questionmark" alt="menu" onclick="toggleHelpClick()" src="assets/question.png" width="24px" height="24px">
+					<img id="closeHelp" alt="menu" onclick="toggleHelpClick()" src="assets/close_white.png" width="24px" height="24px">
+				</div>
+			</div>
+		</div>
 
-  <!-- div #main-navbar .main-navbar .main-navbar-fixed-top -->
-  <div id="main-sidebar" class="main-sidebar main-sidebar-left" onmousedown="preventEventPropagation();">
-    <div id="main-sidebar-wrapper" class="main-sidebar-wrapper">
+		<!-- Sidebar Menu / sliiide.js -->
+		<div id="main-sidebar" class="main-sidebar main-sidebar-left" onmousedown="preventEventPropagation();">
+			<div id="main-sidebar-wrapper" class="main-sidebar-wrapper">
+				<!-- Change the Controller of the Model -->
+				<p class="controller-title">Wähle die Steuerung</p>
 
-      <p class="controller-title">Wähle die Steuerung</p>
+				<div class="buttons">
+					<img id="orbitBtn" class="box" onclick="orbitClick();" src="assets/circular.png"></img>
+					<img id="fpvBtn" class="box" onclick="fpvClick();" src="assets/paper.png"></img>
+				</div>
+				  
+				<div class="buttons" style="font-family:roboto">
+					<span>Orbitsteuerung&nbsp;</span>
+					<span>Flugsteuerung</span>
+				</div>
+				
+				<!-- Link to History of Homburg -->
+				<div class="menu-sidebar-content">
+					<p onclick="menu.deactivate();">Homburg</p>
+					<p>
+						<a href="http://www.laeufelfingen.com/gebäude/h/ch.htm" target="_blank">Chronik</a>
+					</p>
+					<p onclick="showAbout();">Über das Projekt</p>
+				</div>
 
-      <div class="buttons">
-        <img id="orbitBtn" class="box" onclick="orbitClick();" src="assets/circular.png"></img>
-        <img id="fpvBtn" class="box" onclick="fpvClick();" src="assets/paper.png"></img>
-      </div>
-      <div class="buttons" style="font-family:roboto">
-        <span>Orbitsteuerung&nbsp;</span>
-        <span>Flugsteuerung</span>
-      </div>
-      <div>
-
-      </div>
-
-      <div class="menu-sidebar-content">
-        <p onclick="menu.deactivate();">Homburg</p>
-        <p><a href="http://www.laeufelfingen.com/gebäude/h/ch.htm" target="_blank">Chronik</a></p>
-        <p onclick="showAbout();">Über das Projekt</p>
-      </div>
-
-      <!-- Buttons start here. Copy this ul to your document. -->
-      <div class="share-container">
-        <ul class="rrssb-buttons">
-          <li class="rrssb-email">
-            <!-- Replace subject with your message using URL Endocding: http://meyerweb.com/eric/tools/dencoder/ -->
-            <a href="mailto:homburg@laeufelfingen.com">
-              <span class="rrssb-icon">
+				<!-- Social Media Buttons / rrssb.js -->
+				<div class="share-container">
+					<ul class="rrssb-buttons">
+						<li class="rrssb-email">
+							<!-- Replace subject with your message using URL Endocding: http://meyerweb.com/eric/tools/dencoder/ -->
+							<a href="mailto:homburg@laeufelfingen.com">
+								<span class="rrssb-icon">
 									<svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 28 28">
 										<path d="M20.11 26.147c-2.335 1.05-4.36 1.4-7.124 1.4C6.524 27.548.84 22.916.84 15.284.84 7.343 6.602.45 15.4.45c6.854 0 11.8 4.7 11.8 11.252 0 5.684-3.193 9.265-7.398 9.3-1.83 0-3.153-.934-3.347-2.997h-.077c-1.208 1.986-2.96 2.997-5.023 2.997-2.532 0-4.36-1.868-4.36-5.062 0-4.75 3.503-9.07 9.11-9.07 1.713 0 3.7.4 4.6.972l-1.17 7.203c-.387 2.298-.115 3.3 1 3.4 1.674 0 3.774-2.102 3.774-6.58 0-5.06-3.27-8.994-9.304-8.994C9.05 2.87 3.83 7.545 3.83 14.97c0 6.5 4.2 10.2 10 10.202 1.987 0 4.09-.43 5.647-1.245l.634 2.22zM16.647 10.1c-.31-.078-.7-.155-1.207-.155-2.572 0-4.596 2.53-4.596 5.53 0 1.5.7 2.4 1.9 2.4 1.44 0 2.96-1.83 3.31-4.088l.592-3.72z"/>
 									</svg>
 								</span>
-            </a>
-          </li>
+							</a>
+						</li>
 
-          <li class="rrssb-facebook">
-            <!--  Replace with your URL. For best results, make sure you page has the proper FB Open Graph tags in header: https://developers.facebook.com/docs/opengraph/howtos/maximizing-distribution-media-content/ -->
-            <a href="https://www.facebook.com/heschgwuesst/" target="_blank">
-              <span class="rrssb-icon">
+						<li class="rrssb-facebook">
+							<!--  Replace with your URL. For best results, make sure you page has the proper FB Open Graph tags in header: https://developers.facebook.com/docs/opengraph/howtos/maximizing-distribution-media-content/ -->
+							<a href="https://www.facebook.com/heschgwuesst/" target="_blank">
+								<span class="rrssb-icon">
 									<svg xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMidYMid" width="29" height="29" viewBox="0 0 29 29">
 										<path d="M26.4 0H2.6C1.714 0 0 1.715 0 2.6v23.8c0 .884 1.715 2.6 2.6 2.6h12.393V17.988h-3.996v-3.98h3.997v-3.062c0-3.746 2.835-5.97 6.177-5.97 1.6 0 2.444.173 2.845.226v3.792H21.18c-1.817 0-2.156.9-2.156 2.168v2.847h5.045l-.66 3.978h-4.386V29H26.4c.884 0 2.6-1.716 2.6-2.6V2.6c0-.885-1.716-2.6-2.6-2.6z"
 										class="cls-2" fill-rule="evenodd" />
 									</svg>
 								</span>
-            </a>
-          </li>
+							</a>
+						</li>
 
-          <li class="rrssb-linkedin">
-            <!-- Replace href with your meta and URL information -->
-            <a href="https://www.linkedin.com/nhome/?trk=" target="_blank">
-              <span class="rrssb-icon">
+						<li class="rrssb-linkedin">
+							<!-- Replace href with your meta and URL information -->
+							<a href="https://www.linkedin.com/nhome/?trk=" target="_blank">
+								<span class="rrssb-icon">
 									<svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 28 28">
 										<path d="M25.424 15.887v8.447h-4.896v-7.882c0-1.98-.71-3.33-2.48-3.33-1.354 0-2.158.91-2.514 1.802-.13.315-.162.753-.162 1.194v8.216h-4.9s.067-13.35 0-14.73h4.9v2.087c-.01.017-.023.033-.033.05h.032v-.05c.65-1.002 1.812-2.435 4.414-2.435 3.222 0 5.638 2.106 5.638 6.632zM5.348 2.5c-1.676 0-2.772 1.093-2.772 2.54 0 1.42 1.066 2.538 2.717 2.546h.032c1.71 0 2.77-1.132 2.77-2.546C8.056 3.593 7.02 2.5 5.344 2.5h.005zm-2.48 21.834h4.896V9.604H2.867v14.73z" />
 									</svg>
 								</span>
-            </a>
-          </li>
+							</a>
+						</li>
 
-          <li class="rrssb-twitter">
-            <!-- Replace href with your Meta and URL information  -->
-            <a href="https://twitter.com/MohlerDaniel" target="_blank">
-              <span class="rrssb-icon">
+						<li class="rrssb-twitter">
+							<!-- Replace href with your Meta and URL information  -->
+							<a href="https://twitter.com/MohlerDaniel" target="_blank">
+								<span class="rrssb-icon">
 									<svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 28 28">
 										<path d="M24.253 8.756C24.69 17.08 18.297 24.182 9.97 24.62c-3.122.162-6.22-.646-8.86-2.32 2.702.18 5.375-.648 7.507-2.32-2.072-.248-3.818-1.662-4.49-3.64.802.13 1.62.077 2.4-.154-2.482-.466-4.312-2.586-4.412-5.11.688.276 1.426.408 2.168.387-2.135-1.65-2.73-4.62-1.394-6.965C5.574 7.816 9.54 9.84 13.802 10.07c-.842-2.738.694-5.64 3.434-6.48 2.018-.624 4.212.043 5.546 1.682 1.186-.213 2.318-.662 3.33-1.317-.386 1.256-1.248 2.312-2.4 2.942 1.048-.106 2.07-.394 3.02-.85-.458 1.182-1.343 2.15-2.48 2.71z"/>
 									</svg>
 								</span>
-            </a>
-          </li>
+							</a>
+						</li>
 
-          <li class="rrssb-googleplus">
-            <!-- Replace href with your meta and URL information.  -->
-            <a href="https://plus.google.com/u/0/b/101520139922980834129/+Flurnamenpuzzle/posts" target="_blank">
-              <span class="rrssb-icon">
+						<li class="rrssb-googleplus">
+							<!-- Replace href with your meta and URL information.  -->
+							<a href="https://plus.google.com/u/0/b/101520139922980834129/+Flurnamenpuzzle/posts" target="_blank">
+								<span class="rrssb-icon">
 									<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"><path d="M21 8.29h-1.95v2.6h-2.6v1.82h2.6v2.6H21v-2.6h2.6v-1.885H21V8.29zM7.614 10.306v2.925h3.9c-.26 1.69-1.755 2.925-3.9 2.925-2.34 0-4.29-2.016-4.29-4.354s1.885-4.353 4.29-4.353c1.104 0 2.014.326 2.794 1.105l2.08-2.08c-1.3-1.17-2.924-1.883-4.874-1.883C3.65 4.586.4 7.835.4 11.8s3.25 7.212 7.214 7.212c4.224 0 6.953-2.988 6.953-7.082 0-.52-.065-1.104-.13-1.624H7.614z"/></svg>            </span>
-              </span>
-            </a>
-          </li>
-        </ul>
-      </div>
-      <!-- Buttons end here -->
+								</span>
+							</a>
+						</li>
+					</ul>
+				</div>
 
+				<!-- Logo FHNW -->
+				<a href="http://www.fhnw.ch/technik"><img id="logo" class="fhnw-logo" src="assets/logofhnwwhite.png"></a>
+			</div>
+		</div>
+		
+		<!-- Top Box with topo-Link -->
+		<div class="topoBoxContainer">
+			<div id="topoBox">
+				<p>Homburg</p>
+				<a href="https://map.geo.admin.ch/?Y=631430&X=250317&crosshair=circle&zoom=8&bgLayer=ch.swisstopo.pixelkarte-farbe&lang=de&topic=ech&layers=ch.swisstopo.zeitreihen,ch.bfs.gebaeude_wohnungs_register,ch.bafu.wrz-wildruhezonen_portal,ch.swisstopo.swisstlm3d-wanderwege&layers_visibility=false,false,false,false&layers_timestamp=18641231" target="_blank">Standort</a>
+			</div>
+			<div id="topoBoxArrow" onclick="showLocationBox();">
+				<img src="assets/arrow_down.png" />
+			</div>
+		</div>
 
-      <a href="http://www.fhnw.ch/technik"><img id="logo" class="fhnw-logo" src="assets/logofhnwwhite.png"></a>
-    </div>
-  </div>
+		<!-- Help Box Orbit Controller -->
+		<div id="helpOrbit" class="help-box">
+			<table style="margin:20px auto 20px auto">
+				<tr style="height: 40px">
+					<td><b>Mausrad:</b></td>
+					<td>Zoom</td>
+				</tr>
+				<tr style="height: 40px">
+					<td><b>Linke Maustaste:</b></td>
+					<td>Modell drehen</td>
+				</tr>
+				<tr style="height: 40px">
+					<td><b>Rechte Maustaste:</b></td>
+					<td>Modell ziehen</td>
+				</tr>
+				<tr style="height: 40px">
+					<td><b>R:</b></td>
+					<td>Kamera zurücksetzten</td>
+				</tr>
+			</table>
+		</div>
 
-  <div class="topoBoxContainer">
-    <div id="topoBox">
-      <p>Homburg</p>
-      <a href="https://map.geo.admin.ch/?Y=631430&X=250317&crosshair=circle&zoom=8&bgLayer=ch.swisstopo.pixelkarte-farbe&lang=de&topic=ech&layers=ch.swisstopo.zeitreihen,ch.bfs.gebaeude_wohnungs_register,ch.bafu.wrz-wildruhezonen_portal,ch.swisstopo.swisstlm3d-wanderwege&layers_visibility=false,false,false,false&layers_timestamp=18641231"
-      target="_blank">Standort</a>
-    </div>
-    <div id="topoBoxArrow" onclick="showLocationBox();">
-      <img src="assets/arrow_down.png" />
-    </div>
-  </div>
+		<!-- Help Box FPV Controller -->
+		<div id="helpFPV" class="help-box">
+			<table style="margin:20px auto 20px auto">
+				<tr style="height: 40px">
+					<td><b>W:</b></td>
+					<td>Vor</td>
+					<td><b>S:</b></td>
+					<td>Zurück</td>
+				</tr>
+				<tr style="height: 40px">
+					<td><b>A:</b></td>
+					<td>Links</td>
+					<td><b>D:</b></td>
+					<td>Rechts</td>
+				</tr>
+					<tr style="height: 40px">
+					<td colspan="2"><b>Maustasten:</b></td>
+					<td colspan="2">Kamera bewegen</td>
+				</tr>
+					<tr style="height: 40px">
+					<td colspan="2"><b>R:</b></td>
+					<td colspan="2">Kamera zurücksetzten</td>
+				</tr>
+			</table>
+		</div>
 
+		<!-- Minimap -->
+		<div class="map-box" onmousedown="preventEventPropagation();">
+			<img id="map" src="assets/mapCenteredSquared.png" />
+			<div id="mini-map-point" class="map-point">
+				<div class="red-dot-outer"></div>
+				<div class="red-dot-inner"></div>
+			</div>
+		</div>
+		<img class="resize-icon" src="assets/resize.png" onclick="fullMapClick();" onmousedown="preventEventPropagation();" />
 
-  <div id="helpOrbit" class="help-box">
-    <table style="margin:20px auto 20px auto">
-      <tr style="height: 40px">
-        <td><b>Mausrad:</b></td>
-        <td>Zoom</td>
-      </tr>
-      <tr style="height: 40px">
-        <td><b>Linke Maustaste:</b></td>
-        <td>Modell drehen</td>
-      </tr>
-      <tr style="height: 40px">
-        <td><b>Rechte Maustaste:</b></td>
-        <td>Modell ziehen</td>
-      </tr>
-      <tr style="height: 40px">
-        <td><b>R:</b></td>
-        <td>Kamera zurücksetzten</td>
-      </tr>
-    </table>
-  </div>
+		<!-- Big Minimap -->
+		<div class="full-map-box" onmousedown="preventEventPropagation();">
+			<img id="full-map" src="assets/mapFullCentered.png" />
+			<div id="full-map-point" class="map-point">
+				<div class="red-dot-outer"></div>
+				<div class="red-dot-inner"></div>
+			</div>
+		</div>
+		<img class="resize-icon-full" src="assets/resize.png" onclick="smallMapClick();" onmousedown="preventEventPropagation();" />
 
-  <div id="helpFPV" class="help-box">
-    <table style="margin:20px auto 20px auto">
-      <tr style="height: 40px">
-        <td><b>W:</b></td>
-        <td>Vor</td>
-        <td><b>S:</b></td>
-        <td>Zurück</td>
-      </tr>
-      <tr style="height: 40px">
-        <td><b>A:</b></td>
-        <td>Links</td>
-        <td><b>D:</b></td>
-        <td>Rechts</td>
-      </tr>
-      <tr style="height: 40px">
-        <td colspan="2"><b>Maustasten:</b></td>
-        <td colspan="2">Kamera bewegen</td>
-      </tr>
-      <tr style="height: 40px">
-        <td colspan="2"><b>R:</b></td>
-        <td colspan="2">Kamera zurücksetzten</td>
-      </tr>
-    </table>
-  </div>
+		<!-- Overlay for loading -->
+		<div id="overlay">
+			<p>Einen Moment bitte, die Homburg wird geladen...</p>
+		</div>
 
-  <div class="map-box" onmousedown="preventEventPropagation();">
-    <img id="map" src="assets/mapCenteredSquared.png" />
-    <div id="mini-map-point" class="map-point">
-      <div class="red-dot-outer">
-      </div>
-      <div class="red-dot-inner">
-      </div>
-    </div>
-  </div>
-  <img class="resize-icon" src="assets/resize.png" onclick="fullMapClick();" onmousedown="preventEventPropagation();" />
+		<!-- Container for Marker-Content -->
+		<div id="content-container" onclick="closeContent();" onmousedown="preventEventPropagation();">
+			<div id="content" onclick="preventEventPropagation();"></div>
+			<img class="close-icon" src="assets/close.png" onclick="closeContent();" />
+		</div>
 
-  <div class="full-map-box" onmousedown="preventEventPropagation();">
-    <img id="full-map" src="assets/mapFullCentered.png" />
-    <div id="full-map-point" class="map-point">
-      <div class="red-dot-outer">
-      </div>
-      <div class="red-dot-inner">
-      </div>
-    </div>
-  </div>
-  <img class="resize-icon-full" src="assets/resize.png" onclick="smallMapClick();" onmousedown="preventEventPropagation();"
-  />
-
-  <div id="overlay">
-    <p>Einen Moment bitte, die Homburg wird geladen...</p>
-  </div>
-
-  <div id="content-container" onclick="closeContent();" onmousedown="preventEventPropagation();">
-    <div id="content" onclick="preventEventPropagation();">
-    </div>
-    <img class="close-icon" src="assets/close.png" onclick="closeContent();" />
-  </div>
-
-  <div id="copyright">&copy; Daniel Mohler- Schmid, Läufelfingen / 3D-Rekonstruktion &copy; 2013 Archäologie Baselland, Joe Rohrer</div>
-
-</body>
-
+		<!-- Copyright -->
+		<div id="copyright">&copy; Daniel Mohler- Schmid, Läufelfingen / 3D-Rekonstruktion &copy; 2013 Archäologie Baselland, Joe Rohrer</div>	
+	</body>
 </html>

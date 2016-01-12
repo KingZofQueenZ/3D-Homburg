@@ -44,6 +44,7 @@ var camera;
 var renderer;
 var clock;
 var daeModel;
+var model;
 var markers = [];
 
 // -------------------- Scene & model initialization --------------------
@@ -244,19 +245,19 @@ function loadColladaModel(spinnerClass, overlayClass, topoId){
 	
 	var loader = new THREE.ObjectLoader(); 
 	loader.load("assets/model.json", function( obj ){ 
-			
-		obj.position.set(0,0,0);
-		obj.scale.set(1.5,1.5,1.5);
-		scene.add( obj ); 
-		animate();
+		model = obj;
+		
+		// Always show both sides of mesh (Model has errors)
+		model.traverse(function(child){
+			if (child instanceof THREE.Mesh){        
+				child.material.side = THREE.DoubleSide;        
+			}        
+		});   
+		
+		model.position.set(0,0,0);
+		model.scale.set(1.5,1.5,1.5);
+		scene.add( model ); 
 	});
-	    	
-	/*var loader = new THREE.JSONLoader();
-    loader.load( "assets/model3.json", function(geometry){
-		var material = new THREE.MeshLambertMaterial({color: 0x55B663});
-		mesh = new THREE.Mesh(geometry, material);
-		scene.add(mesh);
-    });*/
 	
 	addSavedMarkersToScene();
 	
@@ -618,7 +619,7 @@ function detectCollisionUsingVector(x, y, z){
 	cameraDirection.applyQuaternion( camera.quaternion );
 	
 	var rayCaster = new THREE.Raycaster(camera.position, cameraDirection);    
-	var intersects = rayCaster.intersectObject(daeModel, true);   
+	var intersects = rayCaster.intersectObject(model, true);   
 	return (intersects.length > 0 && intersects[0].distance < 25);
 }
 
@@ -643,7 +644,7 @@ function setBoxOnUserClick(){
 	raycaster.setFromCamera( mouse, camera );
 	
 	// If Ray intersects the 3D Model show Marker Dialog
-	var intersects = raycaster.intersectObject(daeModel, true);
+	var intersects = raycaster.intersectObject(model, true);
 	if (intersects.length > 0) {
 		showAddMarkerDialog(intersects[0].point);
 	}

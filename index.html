@@ -50,6 +50,7 @@
 			var orbitHelpShown = false;
 			var fpvHelpShown = false;
 			var topoVisible = true;
+      var menuVisible = true;
 			var menu;
 			
 			// Function on Page Load
@@ -156,14 +157,36 @@
 				$("#closeHelp").show();
 				$("#questionmark").hide();
 			}
-		  
-			function showLocationBox(){
+      
+      // Show topo box if now visible
+			function showLocationBox(event){
 				if(!topoVisible){
 					$("#topoBox").slideDown( "fast");
 					topoVisible = true;
 				}
-				preventEventPropagation();
+				preventEventPropagation(event);
 			}
+      
+      // Click Function for Topobox
+			$(document).click(function(e){
+				if(topoVisible){
+					$("#topoBox").slideUp( "fast");
+					topoVisible = false;
+				}
+        if(menuVisible){
+          menu.deactivate();
+          menuVisible = false;
+        }
+			});
+      
+      // Show menu if not visible
+      function toggleMenu(event){
+        if(!menuVisible){
+          menu.activate();
+          menuVisible = true;
+        }
+        preventEventPropagation(event);
+      }
 	 
 	 
 			// ------------- Controls handling -------------
@@ -225,19 +248,10 @@
 				}
 			});
 		  
-			// Click Function for Topobox
-			$(document).click(function(e){
-				if(topoVisible){
-					$("#topoBox").slideUp( "fast");
-					topoVisible = false;
-				}
-				menu.deactivate();
-			});
-		  
 			// ------------- Map handling -------------
 			
 			// Display Big Map
-			function fullMapClick(){    
+			function fullMapClick(event){    
 				$( ".map-box" ).fadeOut( 100, function() {
 					$( ".full-map-box" ).fadeIn( 100, function(){});
 				});     
@@ -246,11 +260,11 @@
 					$( ".resize-icon-full" ).fadeIn( 100, function(){});
 				});  
 				
-				preventEventPropagation();      
+				preventEventPropagation(event);      
 			}
 		  
 			// Display Small Map
-			function smallMapClick(){    
+			function smallMapClick(event){    
 				$( ".full-map-box" ).fadeOut( 100, function() {
 					$( ".map-box" ).fadeIn( 100, function(){});
 				});     
@@ -259,7 +273,7 @@
 					$( ".resize-icon" ).fadeIn( 100, function(){});
 				});    
 				
-				preventEventPropagation();   
+				preventEventPropagation(event);   
 			}
 		  
 			// ------------- Content overlay handling -------------
@@ -271,7 +285,7 @@
 			}
 			
 			// Prevent that Controller gets moved when user clicks on Button
-			function preventEventPropagation(){        
+			function preventEventPropagation(event){        
 				event.preventDefault();
 				event.stopPropagation();
 			}
@@ -290,11 +304,11 @@
 		<!-- Top Navigation Bar / Menu-Button on the left / Questionmark on the right -->
 		<div id="main-navbar" class="main-navbar main-navbar-fixed-top">
 			<div class="main-navbar-content">
-				<div id="toggle-sidebar" class="icon left" onmousedown="preventEventPropagation();">
+				<div id="toggle-sidebar" class="icon left" onclick="toggleMenu(event);">
 					<img id="toggle" alt="menu" src="assets/menu32@64.png" width="24px" height="24px">
 				</div>
 
-				<div id="toggle-sidebar" class="icon right" onmousedown="preventEventPropagation();">
+				<div id="toggle-sidebar" class="icon right" onmousedown="preventEventPropagation(event);">
 					<img id="questionmark" alt="menu" onclick="toggleHelpClick()" src="assets/question.png" width="24px" height="24px">
 					<img id="closeHelp" alt="menu" onclick="toggleHelpClick()" src="assets/close_white.png" width="24px" height="24px">
 				</div>
@@ -302,7 +316,7 @@
 		</div>
 
 		<!-- Sidebar Menu / sliiide.js -->
-		<div id="main-sidebar" class="main-sidebar main-sidebar-left" onmousedown="preventEventPropagation();">
+		<div id="main-sidebar" class="main-sidebar main-sidebar-left" onmousedown="preventEventPropagation(event);">
 			<div id="main-sidebar-wrapper" class="main-sidebar-wrapper">
 				<!-- Change the Controller of the Model -->
 				<p class="controller-title">Wähle die Steuerung</p>
@@ -396,7 +410,7 @@
 				<p>Homburg</p>
 				<a href="https://map.geo.admin.ch/?Y=631430&X=250317&crosshair=circle&zoom=8&bgLayer=ch.swisstopo.pixelkarte-farbe&lang=de&topic=ech&layers=ch.swisstopo.zeitreihen,ch.bfs.gebaeude_wohnungs_register,ch.bafu.wrz-wildruhezonen_portal,ch.swisstopo.swisstlm3d-wanderwege&layers_visibility=false,false,false,false&layers_timestamp=18641231" target="_blank">Standort</a>
 			</div>
-			<div id="topoBoxArrow" onclick="showLocationBox();">
+			<div id="topoBoxArrow" onclick="showLocationBox(event);">
 				<img src="assets/arrow_down.png" />
 			</div>
 		</div>
@@ -450,24 +464,24 @@
 		</div>
 
 		<!-- Minimap -->
-		<div class="map-box" onmousedown="preventEventPropagation();">
+		<div class="map-box" onmousedown="preventEventPropagation(event);">
 			<img id="map" src="assets/mapCenteredSquared.png" />
 			<div id="mini-map-point" class="map-point">
 				<div class="red-dot-outer"></div>
 				<div class="red-dot-inner"></div>
 			</div>
 		</div>
-		<img class="resize-icon" src="assets/resize.png" onclick="fullMapClick();" onmousedown="preventEventPropagation();" />
+		<img class="resize-icon" src="assets/resize.png" onclick="fullMapClick(event);" onmousedown="preventEventPropagation(event);" />
 
 		<!-- Big Minimap -->
-		<div class="full-map-box" onmousedown="preventEventPropagation();">
+		<div class="full-map-box" onmousedown="preventEventPropagation(event);">
 			<img id="full-map" src="assets/mapFullCentered.png" />
 			<div id="full-map-point" class="map-point">
 				<div class="red-dot-outer"></div>
 				<div class="red-dot-inner"></div>
 			</div>
 		</div>
-		<img class="resize-icon-full" src="assets/resize.png" onclick="smallMapClick();" onmousedown="preventEventPropagation();" />
+		<img class="resize-icon-full" src="assets/resize.png" onclick="smallMapClick(event);" onmousedown="preventEventPropagation(event);" />
 
 		<!-- Overlay for loading -->
 		<div id="overlay">
@@ -475,9 +489,9 @@
 		</div>
 
 		<!-- Container for Marker-Content -->
-		<div id="content-container" onclick="closeContent();" onmousedown="preventEventPropagation();">
-			<div id="content" onclick="preventEventPropagation();"></div>
-			<img class="close-icon" src="assets/close.png" onclick="closeContent();" />
+		<div id="content-container" onclick="closeContent(event);" onmousedown="preventEventPropagation(event);">
+			<div id="content" onclick="preventEventPropagation(event);"></div>
+			<img class="close-icon" src="assets/close.png" onclick="closeContent(event);" />
 		</div>
 
 		<!-- Copyright -->

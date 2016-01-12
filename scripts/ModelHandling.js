@@ -431,9 +431,7 @@ function calculateMapValues(width){
 function updateMap(){  
   var mapPixelFactorMini = MAP_MINI_WIDTH / MODEL_WIDTH;
   var mapPixelFactorFull = (MAP_FULL_WIDTH / 1.864) / MODEL_WIDTH;
-  
-  console.log(mapPixelFactorMini + " " + mapPixelFactorFull);
-  
+    
   var marginXMini = -(camera.position.x * mapPixelFactorMini) +  MAP_MINI_WIDTH / 2;
   var marginYMini = -(camera.position.z * mapPixelFactorMini) + MAP_MINI_HEIGHT / 2;
   var marginXFull = -(camera.position.x * mapPixelFactorFull) +  MAP_FULL_WIDTH / 2;

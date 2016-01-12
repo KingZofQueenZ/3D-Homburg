@@ -46,7 +46,6 @@ var clock;
 var daeModel;
 var markers = [];
 
-
 // -------------------- Scene & model initialization --------------------
 
 // Init base scene
@@ -218,7 +217,7 @@ function addSkydome(){
 // Load collada model and add to scene
 function loadColladaModel(spinnerClass, overlayClass, topoId){
 	// Create new collada loader - can be replaced
-	var loader = new THREE.ColladaLoader();
+	/*var loader = new THREE.ColladaLoader();
 	loader.options.convertUpAxis = true;
 	loader.load( 'assets/model.dae', function ( collada ) {
 		daeModel = collada.scene;
@@ -228,7 +227,7 @@ function loadColladaModel(spinnerClass, overlayClass, topoId){
 			if (child instanceof THREE.Mesh){        
 				child.material.side = THREE.DoubleSide;        
 			}        
-		});          
+		});         
 				
 		var skin = collada.skins[ 0 ];
 		daeModel.position.set(0,0,0);
@@ -241,7 +240,23 @@ function loadColladaModel(spinnerClass, overlayClass, topoId){
 		$(spinnerClass).hide();
 		$(overlayClass).hide(); 
 		$(topoId).slideDown( "fast");
+	});*/
+	
+	var loader = new THREE.ObjectLoader(); 
+	loader.load("assets/model.json", function( obj ){ 
+			
+		obj.position.set(0,0,0);
+		obj.scale.set(1.5,1.5,1.5);
+		scene.add( obj ); 
+		animate();
 	});
+	    	
+	/*var loader = new THREE.JSONLoader();
+    loader.load( "assets/model3.json", function(geometry){
+		var material = new THREE.MeshLambertMaterial({color: 0x55B663});
+		mesh = new THREE.Mesh(geometry, material);
+		scene.add(mesh);
+    });*/
 	
 	addSavedMarkersToScene();
 	
@@ -251,6 +266,8 @@ function loadColladaModel(spinnerClass, overlayClass, topoId){
 	$(topoId).slideDown( "fast");
   
 }
+
+
 
 // Add Markers to the scene
 function addSavedMarkersToScene(){

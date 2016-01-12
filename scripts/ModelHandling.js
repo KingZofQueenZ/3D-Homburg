@@ -243,6 +243,7 @@ function loadColladaModel(spinnerClass, overlayClass, topoId){
 		$(topoId).slideDown( "fast");
 	});*/
 	
+	// Create new Object loader - can be replaced
 	var loader = new THREE.ObjectLoader(); 
 	loader.load("assets/model.json", function( obj ){ 
 		model = obj;
@@ -257,15 +258,15 @@ function loadColladaModel(spinnerClass, overlayClass, topoId){
 		model.position.set(0,0,0);
 		model.scale.set(1.5,1.5,1.5);
 		scene.add( model ); 
+		
+		addSavedMarkersToScene();
+		
+		// Hide the spinner and overlay. Show topobox
+		animate();
+		$(spinnerClass).hide();
+		$(overlayClass).hide(); 
+		$(topoId).slideDown( "fast");
 	});
-	
-	addSavedMarkersToScene();
-	
-	animate();
-	$(spinnerClass).hide();
-	$(overlayClass).hide(); 
-	$(topoId).slideDown( "fast");
-  
 }
 
 

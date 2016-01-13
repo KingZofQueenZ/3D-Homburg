@@ -218,7 +218,7 @@ function addSkydome(){
 // Load collada model and add to scene
 function loadColladaModel(spinnerClass, overlayClass, topoId){
 	// Create new collada loader - can be replaced
-	/*var loader = new THREE.ColladaLoader();
+	var loader = new THREE.ColladaLoader();
 	loader.options.convertUpAxis = true;
 	loader.load( 'assets/model.dae', function ( collada ) {
 		daeModel = collada.scene;
@@ -241,10 +241,12 @@ function loadColladaModel(spinnerClass, overlayClass, topoId){
 		$(spinnerClass).hide();
 		$(overlayClass).hide(); 
 		$(topoId).slideDown( "fast");
-	});*/
-	
-	// Create new Object loader - can be replaced
-	var loader = new THREE.ObjectLoader(); 
+	});
+}
+
+// Load JSON model and add to scene
+function loadJSONModel(spinnerClass, overlayClass, topoId){
+  var loader = new THREE.ObjectLoader(); 
 	loader.load("assets/model.json", function( obj ){ 
 		model = obj;
 		
@@ -253,7 +255,7 @@ function loadColladaModel(spinnerClass, overlayClass, topoId){
 			if (child instanceof THREE.Mesh){        
 				child.material.side = THREE.DoubleSide;        
 			}        
-		});   
+		}); 
 		
 		model.position.set(0,0,0);
 		model.scale.set(1.5,1.5,1.5);

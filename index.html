@@ -162,6 +162,7 @@
 			function showLocationBox(event){
 				if(!topoVisible){
 					$("#topoBox").slideDown( "fast");
+          $("#topoBoxArrowImg").addClass("arrowRotated");
 					topoVisible = true;
 				}
 				preventEventPropagation(event);
@@ -171,6 +172,7 @@
 			$(document).click(function(e){
 				if(topoVisible){
 					$("#topoBox").slideUp( "fast");
+          $("#topoBoxArrowImg").removeClass("arrowRotated");
 					topoVisible = false;
 				}
         if(menuVisible){
@@ -411,7 +413,7 @@
 				<a href="https://map.geo.admin.ch/?Y=631430&X=250317&crosshair=circle&zoom=8&bgLayer=ch.swisstopo.pixelkarte-farbe&lang=de&topic=ech&layers=ch.swisstopo.zeitreihen,ch.bfs.gebaeude_wohnungs_register,ch.bafu.wrz-wildruhezonen_portal,ch.swisstopo.swisstlm3d-wanderwege&layers_visibility=false,false,false,false&layers_timestamp=18641231" target="_blank">Standort</a>
 			</div>
 			<div id="topoBoxArrow" onclick="showLocationBox(event);">
-				<img src="assets/arrow_down.png" />
+				<img id="topoBoxArrowImg" class="arrowRotated" src="assets/arrow_down.png" />
 			</div>
 		</div>
 

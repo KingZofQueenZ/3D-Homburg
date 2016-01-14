@@ -6,14 +6,12 @@ var MARKERS_FILENAME = "config/markers.txt";
 
 // ---- Map values ----
 var MODEL_WIDTH = 1478;
-var MAX_CAM_HEIGHT = 2550;
-var MIN_MAP_WIDTH = 300;
-var MAP_WIDTH_DELTA = 700;
-
 var MAP_FULL_WIDTH = 960;
+var FULL_MAP_DELTA = 445;
 var MAP_FULL_HEIGHT = 520;
 var MAP_MINI_WIDTH = 250;
 var MAP_MINI_HEIGHT = 250;
+
 var mapWidth;
 var mapHeight;
 var mapModelWidth;
@@ -419,25 +417,15 @@ function animate() {
 
 // -------------------- Map handling --------------------
 
-// Calculate values used for map
-function calculateMapValues(width){
-  mapWidth = 960;
-  mapHeight = mapWidth / 1.846;
-  mapModelWidth = mapWidth / 1.52;
-  baseMarginX = -(mapWidth / 2 - 125);
-  baseMarginY = -(mapHeight / 2 - 125); 
-  mapPixelFactor = mapModelWidth / MODEL_WIDTH;
-}
-
 // Update camera position on map
 function updateMap(){  
   var mapPixelFactorMini = MAP_MINI_WIDTH / MODEL_WIDTH;
-  var mapPixelFactorFull = (MAP_FULL_WIDTH / 1.864) / MODEL_WIDTH;
+  var mapPixelFactorFull = (MAP_FULL_WIDTH - FULL_MAP_DELTA) / MODEL_WIDTH;
     
-  var marginXMini = -(camera.position.x * mapPixelFactorMini) +  MAP_MINI_WIDTH / 2;
-  var marginYMini = -(camera.position.z * mapPixelFactorMini) + MAP_MINI_HEIGHT / 2;
-  var marginXFull = -(camera.position.x * mapPixelFactorFull) +  MAP_FULL_WIDTH / 2;
-  var marginYFull = -(camera.position.z * mapPixelFactorFull) + MAP_FULL_HEIGHT / 2;
+  var marginXMini = MAP_MINI_WIDTH / 2 - (camera.position.x * mapPixelFactorMini);
+  var marginYMini = MAP_MINI_HEIGHT / 2 - (camera.position.z * mapPixelFactorMini);
+  var marginXFull = MAP_FULL_WIDTH / 2 - (camera.position.x * mapPixelFactorFull);
+  var marginYFull = MAP_FULL_HEIGHT / 2 - (camera.position.z * mapPixelFactorFull);
 
   if(marginXMini > MAP_MINI_WIDTH - 18){
     marginXMini = MAP_MINI_WIDTH - 18;

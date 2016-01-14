@@ -28,6 +28,7 @@ var clickInfo = {
 var currentMousePos = { x: -1, y: -1 };
 var raycaster = new THREE.Raycaster();
 var directionVector = new THREE.Vector3();
+var markerListContainerId;
 
 // ---- Model values ----
 var windowWidth;
@@ -78,8 +79,9 @@ function createBaseScene(editmode) {
 	this.editmode = editmode;
 	
 	if(editmode){
-		$( document ).keypress(function(e) {
-			if(e.keyCode != 32)
+		$(document).keypress(function(e) {
+      var code = e.charCode || e.keyCode;
+			if(code != 32)
 				return;
 			
 			// If user presses space, save x & y
@@ -233,6 +235,7 @@ function loadColladaModel(spinnerClass, overlayClass, topoId){
 		daeModel.scale.set(1.5,1.5,1.5);
 		scene.add(daeModel);
 		
+		addSavedMarkersToScene();
 		animate();
 		
 		// Hide the spinner and overlay. Show topobox
@@ -260,9 +263,14 @@ function loadJSONModel(spinnerClass, overlayClass, topoId){
 		scene.add( model ); 
 		
 		addSavedMarkersToScene();
+    
+    // Show marker list if editmode
+    if(editmode)
+      updateMarkerList();
+    
+		animate();
 		
 		// Hide the spinner and overlay. Show topobox
-		animate();
 		$(spinnerClass).hide();
 		$(overlayClass).hide(); 
 		$(topoId).slideDown( "fast");
@@ -288,6 +296,7 @@ function addSavedMarkersToScene(){
 		marker.position.x = value.position.x;
 		marker.position.y = value.position.y;
 		marker.position.z = value.position.z;
+    marker.id = index;
 		marker.name = value.name;
 		
 		// Add marker from file to local array
@@ -315,6 +324,7 @@ function readTextFile(file){
 			}
 		}
 	}
+  
 	rawFile.send(null);
 	
 	// Return the Json String
@@ -477,7 +487,6 @@ function detectIfMarkerClicked(){
 	// Check if the ray intersected with a marker object
 	var intersects = raycaster.intersectObjects(markers, true);
 	if (intersects.length > 0) {
-		console.log(intersects[0].object.name);
 		// Show Overlay of Marker if successful hit
 		showContentOverlay(intersects[0].object.name);
 		return false;
@@ -639,6 +648,22 @@ function setBoxOnUserClick(){
 	}
 }
 
+// Show marker in markers list
+function updateMarkerList(){
+  var markerListContent = "";
+  markers.forEach(function(marker){
+    markerListContent += "<div class='marker-list-entry'>" +
+        "<p>" + marker.name + "</p>" +
+        "<div onclick='deleteMarkerFromModel(" + marker.id + ");' >" +
+          "<img src='assets/delete.png'/>" +
+        "</div>" + 
+      "</div>"
+  });
+  
+  $(markerListContainerId).empty();
+  $(markerListContainerId).html(markerListContent);
+}
+
 // Show marker dialog
 function showAddMarkerDialog(point){
 	// Show bootbox dialog to name the marker
@@ -654,24 +679,51 @@ function showAddMarkerDialog(point){
 // Add marker to scene
 function addMarkerToModel(point, name){
 	// Create new Sphere at x,y,z position
-    var marker = new THREE.Mesh(new THREE.SphereGeometry(5), new THREE.MeshLambertMaterial({ color: 0xff0000 }));
-    marker.position.x = point.x;
-    marker.position.y = point.y;
-    marker.position.z = point.z;
-    marker.name = name;
-	
+  var marker = new THREE.Mesh(new THREE.SphereGeometry(5), new THREE.MeshLambertMaterial({ color: 0xff0000 }));
+  marker.position.x = point.x;
+  marker.position.y = point.y;
+  marker.position.z = point.z;
+  marker.id = markers.length + 1;
+  marker.name = name;
+
 	// Write marker to file
-    addMarkerToFile(marker);
+	markers.push(marker);
+  saveMarkersToFile(marker);
+    
+  // Update marker list
+  updateMarkerList();
 	
 	// Add marker mesh to scene
-    scene.add(marker);
+  scene.add(marker);
 }
 
+// Remove marker from scene
+function deleteMarkerFromModel(id){
+  console.log(markers);
+  // Get marker to delete
+  var markersToKeep = [];
+  markers.forEach(function(marker){
+    if(marker.id != id){
+      markersToKeep.push(marker);
+    } else {
+      // Remove marker from scene
+      scene.remove(marker);
+    }
+  });
+  markers = markersToKeep;
+  console.log(markers);
+  
+  // Write markers to file
+  saveMarkersToFile();
+  
+  // Update markers list
+  updateMarkerList();
+}
+
+
 // Write marker to the file
-function addMarkerToFile(marker){
-	// Add marker to marker array
-	markers.push(marker);
-	
+function saveMarkersToFile(){
+  // Create saveable objects
 	var objectsToSave = [];
 	$.each(markers, function(index, value){
 		objectsToSave.push({name: value.name, position: value.position});

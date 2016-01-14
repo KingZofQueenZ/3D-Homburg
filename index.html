@@ -287,9 +287,14 @@
 			}
 			
 			// Prevent that Controller gets moved when user clicks on Button
-			function preventEventPropagation(event){        
-				event.preventDefault();
-				event.stopPropagation();
+			function preventEventPropagation(handlerEvent){     
+        if(handlerEvent != undefined){
+          event.preventDefault();
+          event.stopPropagation();
+        } else if( event != undefined){
+          event.preventDefault();
+          event.stopPropagation();
+        }
 			}
 		</script>
 	</head>

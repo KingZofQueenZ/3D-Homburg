@@ -572,9 +572,9 @@ function detectB(){
 }
 
 function detectR(){
-  if(detectCollisionUsingVector(1, 0, 0)){
-    controls.blockRight = true;
-  } 
+	if(detectCollisionUsingVector(1, 0, 0)){
+		controls.blockRight = true;
+	}	 
 }
 
 function detectL(){

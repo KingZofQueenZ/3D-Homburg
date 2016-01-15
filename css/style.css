@@ -212,7 +212,7 @@ li a {
 }
 
 .menu-sidebar-content{
-    margin: 220px 0 0 0;
+    margin: 150px 0 0 0;
 }
 
 .main-sidebar-wrapper {
@@ -253,13 +253,15 @@ canvas { width: 100%; height: 100% }
 }
 
 .controller-title{
+  font-size: 20px !important;
   margin-top: 70px !important;
   border-bottom: none !important;
+  height: 40px !important;
 }
 
 .box{
   display: inline-block;
-  margin: 50px 10px 0 10px;
+  margin: 10px 10px 0 10px;
   padding: 5px;
   height: 45px;
   background-color: rgba(1,1,1,0.45);

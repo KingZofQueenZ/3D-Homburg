@@ -13,16 +13,16 @@
 		<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.2/jquery.min.js"></script>
 		<script src="https://ajax.googleapis.com/ajax/libs/jqueryui/1.11.4/jquery-ui.min.js"></script>
 
-		<!-- helper scripts -->
-		<script src="scripts/sliiide.min.js"></script>
-		<script src="scripts/rrssb.min.js"></script>
-		<script src="scripts/json.js"></script>
+		<!-- Helper scripts -->
+		<script src="scripts/lib/sliiide.min.js"></script>
+		<script src="scripts/lib/rrssb.min.js"></script>
+		<script src="scripts/lib/json.js"></script>
 
 		<!-- Three.js scripts -->
-		<script src="scripts/three.js"></script>
-		<script src="scripts/ColladaLoader.js"></script>
-		<script src="scripts/OrbitControls.js"></script>
-		<script src="scripts/FirstPersonControls.js"></script>
+		<script src="scripts/three/three.js"></script>
+		<script src="scripts/three/ColladaLoader.js"></script>
+		<script src="scripts/three/OrbitControls.js"></script>
+		<script src="scripts/three/FirstPersonControls.js"></script>
 		<script src="scripts/ModelHandling.js"></script>
 
 		<!-- Shaders -->
@@ -50,7 +50,7 @@
 			var orbitHelpShown = false;
 			var fpvHelpShown = false;
 			var topoVisible = true;
-      var menuVisible = true;
+			var menuVisible = true;
 			var menu;
 			
 			// Function on Page Load
@@ -89,6 +89,7 @@
 				$('#fpvBtn').addClass("box_selected");
 			} 
 			
+			// Show About Page in Content
 			function showAbout(){
 				$( "#content" ).load( "content/about.html" );
 				$( "#content-container" ).fadeIn( 300 );     
@@ -158,37 +159,40 @@
 				$("#questionmark").hide();
 			}
       
-      // Show topo box if now visible
+			// ------------- TopoBox Handling -------------
+	  
+			// Show topo box if now visible
 			function showLocationBox(event){
 				if(!topoVisible){
 					$("#topoBox").slideDown( "fast");
-          $("#topoBoxArrowImg").addClass("arrowRotated");
+					$("#topoBoxArrowImg").addClass("arrowRotated");
 					topoVisible = true;
 				}
 				preventEventPropagation(event);
 			}
       
-      // Click Function for Topobox
+			// Click Function for Topobox
 			$(document).click(function(e){
 				if(topoVisible){
 					$("#topoBox").slideUp( "fast");
-          $("#topoBoxArrowImg").removeClass("arrowRotated");
+					$("#topoBoxArrowImg").removeClass("arrowRotated");
 					topoVisible = false;
 				}
-        if(menuVisible){
-          menu.deactivate();
-          menuVisible = false;
-        }
+        
+				if(menuVisible){
+					menu.deactivate();
+					menuVisible = false;
+				}
 			});
       
-      // Show menu if not visible
-      function toggleMenu(event){
-        if(!menuVisible){
-          menu.activate();
-          menuVisible = true;
-        }
-        preventEventPropagation(event);
-      }
+			// Show menu if not visible
+			function toggleMenu(event){
+				if(!menuVisible){
+					menu.activate();
+					menuVisible = true;
+				}
+				preventEventPropagation(event);
+			}
 	 
 	 
 			// ------------- Controls handling -------------
@@ -288,13 +292,13 @@
 			
 			// Prevent that Controller gets moved when user clicks on Button
 			function preventEventPropagation(handlerEvent){     
-        if(handlerEvent != undefined){
-          event.preventDefault();
-          event.stopPropagation();
-        } else if( event != undefined){
-          event.preventDefault();
-          event.stopPropagation();
-        }
+				if(handlerEvent != undefined){
+				  handlerEvent.preventDefault();
+				  handlerEvent.stopPropagation();
+				} else if( event != undefined){
+				  event.preventDefault();
+				  event.stopPropagation();
+				}
 			}
 		</script>
 	</head>

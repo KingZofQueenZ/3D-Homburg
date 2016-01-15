@@ -19,17 +19,15 @@
 		<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/js/bootstrap.min.js" integrity="sha512-K1qjQ+NcF2TYO/eI3M6v8EiNYZfA95pQumfvcVrTHtwQVDG+aHRqLi/ETn2uB+1JqwYqVG3LIvdm9lj6imS/pQ==" crossorigin="anonymous"></script>
 				
 		<!-- Helper scripts -->
-		<script src="scripts/bootbox.min.js"></script>
-		<script src="scripts/json.js"></script>
+		<script src="scripts/lib/bootbox.min.js"></script>
+		<script src="scripts/lib/json.js"></script>
 		
 		<!-- Three.js scripts -->
-		<script src="scripts/three.js"></script>
-		<script src="scripts/ColladaLoader.js"></script>
-		<script src="scripts/OrbitControls.js"></script>
-		<script src="scripts/FirstPersonControls.js"></script>
+		<script src="scripts/three/three.js"></script>
+		<script src="scripts/three/ColladaLoader.js"></script>
+		<script src="scripts/three/OrbitControls.js"></script>
+		<script src="scripts/three/FirstPersonControls.js"></script>
 		<script src="scripts/ModelHandling.js"></script>
-		<script src="scripts/Projector.js"></script>
-		<script src="scripts/Detector.js"></script>
 		
 		<!-- Shaders -->
 		<script type="x-shader/x-vertex" id="vertexShader">
@@ -58,7 +56,7 @@
 		<script>		
 			// Function on Page Load	
 			$( document ).ready(function() {
-        markerListContainerId = "#markerListContainer";
+				markerListContainerId = "#markerListContainer";
 				// Init 3D Model - true because edit mode 
 				createBaseScene(true);
 				addThreePointLighting();
@@ -71,22 +69,16 @@
 				// Load 3D Model
 				loadJSONModel(".sk-folding-cube", "#overlay", "");
 			});	
-			
-			// Prevent that Controller gets moved when user clicks on Button			
-			function preventEventPropagation(){        
-				event.preventDefault();
-				event.stopPropagation();
-			}
 		</script>		
 	</head>
   
 	<body>    
-    <div class='marker-list-container'>
-      <div class='marker-list-title'>
-        Gesetzte Marker
-      </div>
-      <div id='markerListContainer'></div>
-    </div>
+		<div class='marker-list-container'>
+			<div class='marker-list-title'>
+				Gesetzte Marker
+			</div>
+			<div id='markerListContainer'></div>
+		</div>
     
 		<!-- Css Loader -->
 		<div class="sk-folding-cube">

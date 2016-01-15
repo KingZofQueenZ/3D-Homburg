@@ -2,7 +2,7 @@
 var BASE_CAM_POSITION = [-800, 700, 1300];
 var CAM_ORBIT = 0;
 var CAM_FPV = 1;
-var MARKERS_FILENAME = "config/markers.txt";
+var MARKERS_FILENAME = "data/markers.txt";
 
 // ---- Map values ----
 var MODEL_WIDTH = 1478;
@@ -21,9 +21,9 @@ var mapPixelFactor;
 
 // ---- Edit mode values ----
 var clickInfo = {
-  x: 0,
-  y: 0,
-  userHasClicked: false
+	x: 0,
+	y: 0,
+	userHasClicked: false
 };
 var currentMousePos = { x: -1, y: -1 };
 var raycaster = new THREE.Raycaster();
@@ -220,7 +220,7 @@ function loadColladaModel(spinnerClass, overlayClass, topoId){
 	// Create new collada loader - can be replaced
 	var loader = new THREE.ColladaLoader();
 	loader.options.convertUpAxis = true;
-	loader.load( 'assets/model.dae', function ( collada ) {
+	loader.load( 'assets/model/model.dae', function ( collada ) {
 		daeModel = collada.scene;
 		
 		// Always show both sides of mesh (Model has errors)
@@ -247,8 +247,8 @@ function loadColladaModel(spinnerClass, overlayClass, topoId){
 
 // Load JSON model and add to scene
 function loadJSONModel(spinnerClass, overlayClass, topoId){
-  var loader = new THREE.ObjectLoader(); 
-	loader.load("assets/model.json", function( obj ){ 
+	var loader = new THREE.ObjectLoader(); 
+	loader.load("assets/model/model.json", function( obj ){ 
 		model = obj;
 		
 		// Always show both sides of mesh (Model has errors)
@@ -264,9 +264,9 @@ function loadJSONModel(spinnerClass, overlayClass, topoId){
 		
 		addSavedMarkersToScene();
     
-    // Show marker list if editmode
-    if(editmode)
-      updateMarkerList();
+		// Show marker list if editmode
+		if(editmode)
+			updateMarkerList();
     
 		animate();
 		
@@ -296,7 +296,7 @@ function addSavedMarkersToScene(){
 		marker.position.x = value.position.x;
 		marker.position.y = value.position.y;
 		marker.position.z = value.position.z;
-    marker.id = index;
+		marker.id = index;
 		marker.name = value.name;
 		
 		// Add marker from file to local array
@@ -345,6 +345,7 @@ function setOrbitControls(restoreCam){
 		
 	// Create new Orbit Controller
 	controls = new THREE.OrbitControls(camera, renderer.domElement);
+	
 	// Set maxPolarAngle and maxDistance, that user can't get out of skybox
 	controls.maxPolarAngle = Math.PI/2;
 	controls.maxDistance = 2500;
@@ -429,42 +430,42 @@ function animate() {
 
 // Update camera position on map
 function updateMap(){  
-  var mapPixelFactorMini = MAP_MINI_WIDTH / MODEL_WIDTH;
-  var mapPixelFactorFull = (MAP_FULL_WIDTH - FULL_MAP_DELTA) / MODEL_WIDTH;
-    
-  var marginXMini = MAP_MINI_WIDTH / 2 - (camera.position.x * mapPixelFactorMini);
-  var marginYMini = MAP_MINI_HEIGHT / 2 - (camera.position.z * mapPixelFactorMini);
-  var marginXFull = MAP_FULL_WIDTH / 2 - (camera.position.x * mapPixelFactorFull);
-  var marginYFull = MAP_FULL_HEIGHT / 2 - (camera.position.z * mapPixelFactorFull);
-
-  if(marginXMini > MAP_MINI_WIDTH - 18){
-    marginXMini = MAP_MINI_WIDTH - 18;
-  } else if(marginXMini < 0){
-    marginXMini = 0;
-  }
-  
-  if(marginYMini > MAP_MINI_HEIGHT - 18){
-    marginYMini = MAP_MINI_HEIGHT - 18;
-  } else if(marginYMini < 0){
-    marginYMini = 0;
-  }
-  
-  if(marginXFull > MAP_FULL_WIDTH - 18){
-    marginXFull = MAP_FULL_WIDTH - 18;
-  } else if(marginXFull < 0){
-    marginXFull = 0;
-  }
-  
-  if(marginYFull > MAP_FULL_HEIGHT - 18){
-    marginYFull = MAP_FULL_HEIGHT - 18;
-  } else if(marginYFull < 0){
-    marginYFull = 0;
-  }
-  
-  $('#mini-map-point').css('margin-right', marginXMini + 'px');
-  $('#mini-map-point').css('margin-bottom',  marginYMini + 'px');
-  $('#full-map-point').css('margin-right', marginXFull + 'px');
-  $('#full-map-point').css('margin-bottom',  marginYFull + 'px');
+	var mapPixelFactorMini = MAP_MINI_WIDTH / MODEL_WIDTH;
+	var mapPixelFactorFull = (MAP_FULL_WIDTH - FULL_MAP_DELTA) / MODEL_WIDTH;
+		
+	var marginXMini = MAP_MINI_WIDTH / 2 - (camera.position.x * mapPixelFactorMini);
+	var marginYMini = MAP_MINI_HEIGHT / 2 - (camera.position.z * mapPixelFactorMini);
+	var marginXFull = MAP_FULL_WIDTH / 2 - (camera.position.x * mapPixelFactorFull);
+	var marginYFull = MAP_FULL_HEIGHT / 2 - (camera.position.z * mapPixelFactorFull);
+	
+	if(marginXMini > MAP_MINI_WIDTH - 18){
+		marginXMini = MAP_MINI_WIDTH - 18;
+	} else if(marginXMini < 0){
+		marginXMini = 0;
+	}
+	
+	if(marginYMini > MAP_MINI_HEIGHT - 18){
+		marginYMini = MAP_MINI_HEIGHT - 18;
+	} else if(marginYMini < 0){
+		marginYMini = 0;
+	}
+	
+	if(marginXFull > MAP_FULL_WIDTH - 18){
+		marginXFull = MAP_FULL_WIDTH - 18;
+	} else if(marginXFull < 0){
+		marginXFull = 0;
+	}
+	
+	if(marginYFull > MAP_FULL_HEIGHT - 18){
+		marginYFull = MAP_FULL_HEIGHT - 18;
+	} else if(marginYFull < 0){
+		marginYFull = 0;
+	}
+	
+	$('#mini-map-point').css('margin-right', marginXMini + 'px');
+	$('#mini-map-point').css('margin-bottom',  marginYMini + 'px');
+	$('#full-map-point').css('margin-right', marginXFull + 'px');
+	$('#full-map-point').css('margin-bottom',  marginYFull + 'px');
 }
 
 // ----------------------------------------------------------
@@ -506,47 +507,47 @@ function showContentOverlay(markerName){
 
 // Detect collision
 function detectCollision(){
-  resetBlockings();
-  
-  if(controls.moveForward && controls.moveRight){
-    detectFR();
-    return;
-  }
-  
-  if(controls.moveForward && controls.moveLeft){
-    detectFL();
-    return;
-  }
-  
-  if(controls.moveBackward && controls.moveRight){
-    detectBR();
-    return;
-  }
-  
-  if(controls.moveBackward && controls.moveLeft){
-    detectBL();
-    return;
-  }  
-  
-  if(controls.moveForward){
-    detectF();
-    return;
-  } 
-  
-  if(controls.moveBackward){
-    detectB();
-    return;
-  } 
-  
-  if(controls.moveRight){
-    detectR(); 
-    return;
-  } 
-  
-  if(controls.moveLeft){
-    detectL();
-    return;
-  }
+	resetBlockings();
+	
+	if(controls.moveForward && controls.moveRight){
+		detectFR();
+		return;
+	}
+	
+	if(controls.moveForward && controls.moveLeft){
+		detectFL();
+		return;
+	}
+	
+	if(controls.moveBackward && controls.moveRight){
+		detectBR();
+		return;
+	}
+	
+	if(controls.moveBackward && controls.moveLeft){
+		detectBL();
+		return;
+	}  
+	
+	if(controls.moveForward){
+		detectF();
+		return;
+	} 
+	
+	if(controls.moveBackward){
+		detectB();
+		return;
+	} 
+	
+	if(controls.moveRight){
+		detectR(); 
+		return;
+	} 
+	
+	if(controls.moveLeft){
+		detectL();
+		return;
+	}
 }
 
 // Reset block direction from previous collision detection
@@ -557,17 +558,17 @@ function resetBlockings(){
     controls.blockLeft = false;
 }
 
-// Exectue collsions detection on each direction
+// Execute collsion detection on each direction
 function detectF(){
-  if(detectCollisionUsingVector(0, 0, -1)){
-    controls.blockForward = true;
-  } 
+	if(detectCollisionUsingVector(0, 0, -1)){
+		controls.blockForward = true;
+	} 
 }
 
 function detectB(){  
-   if(detectCollisionUsingVector(0, 0, 1)){
-    controls.blockBackward = true;
-  } 
+	if(detectCollisionUsingVector(0, 0, 1)){
+		controls.blockBackward = true;
+	} 
 }
 
 function detectR(){
@@ -577,37 +578,37 @@ function detectR(){
 }
 
 function detectL(){
-  if(detectCollisionUsingVector(-1, 0, 0)){
-    controls.blockLeft = true;
-  }
+	if(detectCollisionUsingVector(-1, 0, 0)){
+		controls.blockLeft = true;
+	}
 }
 
 function detectFR(){
-  if(detectCollisionUsingVector(1, 0, -1)){
-    controls.blockForward = true;
-    controls.blockRight = true;
-  } 
+	if(detectCollisionUsingVector(1, 0, -1)){
+		controls.blockForward = true;
+		controls.blockRight = true;
+	} 
 }
 
 function detectFL(){
-  if(detectCollisionUsingVector(-1, 0, -1)){
-    controls.blockForward = true;
-    controls.blockLeft = true;
-  } 
+	if(detectCollisionUsingVector(-1, 0, -1)){
+		controls.blockForward = true;
+		controls.blockLeft = true;
+	} 
 }
 
 function detectBR(){
-  if(detectCollisionUsingVector(1, 0, 1)){
-    controls.blockBackward = true;
-    controls.blockRight = true;
-  }
+	if(detectCollisionUsingVector(1, 0, 1)){
+		controls.blockBackward = true;
+		controls.blockRight = true;
+	}
 }
 
 function detectBL(){
-  if(detectCollisionUsingVector(-1, 0, 1)){
-    controls.blockBackward = true;
-    controls.blockLeft = true;
-  } 
+	if(detectCollisionUsingVector(-1, 0, 1)){
+		controls.blockBackward = true;
+		controls.blockLeft = true;
+	} 
 }
 
 // Detect collsion using a vector
@@ -628,9 +629,8 @@ function detectCollisionUsingVector(x, y, z){
 // Get coordinates to add marker
 function setBoxOnUserClick(){
 	// Check if user has clicked - keypress function
-	if (!clickInfo.userHasClicked) {
+	if (!clickInfo.userHasClicked) 
 		return;
-	}
 	
 	// Reset click if user clicked
 	clickInfo.userHasClicked = false;
@@ -643,25 +643,24 @@ function setBoxOnUserClick(){
 	
 	// If Ray intersects the 3D Model show Marker Dialog
 	var intersects = raycaster.intersectObject(model, true);
-	if (intersects.length > 0) {
+	if (intersects.length > 0) 
 		showAddMarkerDialog(intersects[0].point);
-	}
 }
 
 // Show marker in markers list
 function updateMarkerList(){
-  var markerListContent = "";
-  markers.forEach(function(marker){
-    markerListContent += "<div class='marker-list-entry'>" +
-        "<p>" + marker.name + "</p>" +
-        "<div onclick='deleteMarkerFromModel(" + marker.id + ");' >" +
-          "<img src='assets/delete.png'/>" +
-        "</div>" + 
-      "</div>"
-  });
+	var markerListContent = "";
+	markers.forEach(function(marker){
+		markerListContent += "<div class='marker-list-entry'>" +
+			"<p>" + marker.name + "</p>" +
+			"<div onclick='deleteMarkerFromModel(" + marker.id + ");' >" +
+				"<img src='assets/delete.png'/>" +
+			"</div>" + 
+		"</div>"
+	});
   
-  $(markerListContainerId).empty();
-  $(markerListContainerId).html(markerListContent);
+	$(markerListContainerId).empty();
+	$(markerListContainerId).html(markerListContent);
 }
 
 // Show marker dialog
@@ -679,51 +678,51 @@ function showAddMarkerDialog(point){
 // Add marker to scene
 function addMarkerToModel(point, name){
 	// Create new Sphere at x,y,z position
-  var marker = new THREE.Mesh(new THREE.SphereGeometry(5), new THREE.MeshLambertMaterial({ color: 0xff0000 }));
-  marker.position.x = point.x;
-  marker.position.y = point.y;
-  marker.position.z = point.z;
-  marker.id = markers.length + 1;
-  marker.name = name;
-
+	var marker = new THREE.Mesh(new THREE.SphereGeometry(5), new THREE.MeshLambertMaterial({ color: 0xff0000 }));
+	marker.position.x = point.x;
+	marker.position.y = point.y;
+	marker.position.z = point.z;
+	marker.id = markers.length + 1;
+	marker.name = name;
+	
 	// Write marker to file
 	markers.push(marker);
-  saveMarkersToFile(marker);
-    
-  // Update marker list
-  updateMarkerList();
-	
+	saveMarkersToFile(marker);
+		
+	// Update marker list
+	updateMarkerList();
+		
 	// Add marker mesh to scene
-  scene.add(marker);
+	scene.add(marker);
 }
 
 // Remove marker from scene
 function deleteMarkerFromModel(id){
-  console.log(markers);
-  // Get marker to delete
-  var markersToKeep = [];
-  markers.forEach(function(marker){
-    if(marker.id != id){
-      markersToKeep.push(marker);
-    } else {
-      // Remove marker from scene
-      scene.remove(marker);
-    }
-  });
-  markers = markersToKeep;
-  console.log(markers);
-  
-  // Write markers to file
-  saveMarkersToFile();
-  
-  // Update markers list
-  updateMarkerList();
+	// Get marker to delete
+	var markersToKeep = [];
+	
+	markers.forEach(function(marker){
+		if(marker.id != id){
+			markersToKeep.push(marker);
+		} else {
+			// Remove marker from scene
+			scene.remove(marker);
+		}
+	});
+	
+	markers = markersToKeep;
+	
+	// Write markers to file
+	saveMarkersToFile();
+	
+	// Update markers list
+	updateMarkerList();
 }
 
 
 // Write marker to the file
 function saveMarkersToFile(){
-  // Create saveable objects
+	// Create saveable objects
 	var objectsToSave = [];
 	$.each(markers, function(index, value){
 		objectsToSave.push({name: value.name, position: value.position});
@@ -734,7 +733,7 @@ function saveMarkersToFile(){
 	
 	// Start ajax request which calls php filewriter function (Javascript can't access filesystem)
 	$.ajax({
-		url: "scripts/fwrite.php",
+		url: "scripts/php/fwrite.php",
 		data: { obj: serializedMarkers },
 		dataType: "json",
 		cache: false,

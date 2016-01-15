@@ -6,14 +6,12 @@ var MARKERS_FILENAME = "config/markers.txt";
 
 // ---- Map values ----
 var MODEL_WIDTH = 1478;
-var MAX_CAM_HEIGHT = 2550;
-var MIN_MAP_WIDTH = 300;
-var MAP_WIDTH_DELTA = 700;
-
 var MAP_FULL_WIDTH = 960;
+var FULL_MAP_DELTA = 445;
 var MAP_FULL_HEIGHT = 520;
 var MAP_MINI_WIDTH = 250;
 var MAP_MINI_HEIGHT = 250;
+
 var mapWidth;
 var mapHeight;
 var mapModelWidth;
@@ -30,6 +28,7 @@ var clickInfo = {
 var currentMousePos = { x: -1, y: -1 };
 var raycaster = new THREE.Raycaster();
 var directionVector = new THREE.Vector3();
+var markerListContainerId;
 
 // ---- Model values ----
 var windowWidth;
@@ -80,8 +79,9 @@ function createBaseScene(editmode) {
 	this.editmode = editmode;
 	
 	if(editmode){
-		$( document ).keypress(function(e) {
-			if(e.keyCode != 32)
+		$(document).keypress(function(e) {
+      var code = e.charCode || e.keyCode;
+			if(code != 32)
 				return;
 			
 			// If user presses space, save x & y
@@ -218,7 +218,7 @@ function addSkydome(){
 // Load collada model and add to scene
 function loadColladaModel(spinnerClass, overlayClass, topoId){
 	// Create new collada loader - can be replaced
-	/*var loader = new THREE.ColladaLoader();
+	var loader = new THREE.ColladaLoader();
 	loader.options.convertUpAxis = true;
 	loader.load( 'assets/model.dae', function ( collada ) {
 		daeModel = collada.scene;
@@ -235,16 +235,19 @@ function loadColladaModel(spinnerClass, overlayClass, topoId){
 		daeModel.scale.set(1.5,1.5,1.5);
 		scene.add(daeModel);
 		
+		addSavedMarkersToScene();
 		animate();
 		
 		// Hide the spinner and overlay. Show topobox
 		$(spinnerClass).hide();
 		$(overlayClass).hide(); 
 		$(topoId).slideDown( "fast");
-	});*/
-	
-	// Create new Object loader - can be replaced
-	var loader = new THREE.ObjectLoader(); 
+	});
+}
+
+// Load JSON model and add to scene
+function loadJSONModel(spinnerClass, overlayClass, topoId){
+  var loader = new THREE.ObjectLoader(); 
 	loader.load("assets/model.json", function( obj ){ 
 		model = obj;
 		
@@ -253,16 +256,21 @@ function loadColladaModel(spinnerClass, overlayClass, topoId){
 			if (child instanceof THREE.Mesh){        
 				child.material.side = THREE.DoubleSide;        
 			}        
-		});   
+		}); 
 		
 		model.position.set(0,0,0);
 		model.scale.set(1.5,1.5,1.5);
 		scene.add( model ); 
 		
 		addSavedMarkersToScene();
+    
+    // Show marker list if editmode
+    if(editmode)
+      updateMarkerList();
+    
+		animate();
 		
 		// Hide the spinner and overlay. Show topobox
-		animate();
 		$(spinnerClass).hide();
 		$(overlayClass).hide(); 
 		$(topoId).slideDown( "fast");
@@ -288,6 +296,7 @@ function addSavedMarkersToScene(){
 		marker.position.x = value.position.x;
 		marker.position.y = value.position.y;
 		marker.position.z = value.position.z;
+    marker.id = index;
 		marker.name = value.name;
 		
 		// Add marker from file to local array
@@ -315,6 +324,7 @@ function readTextFile(file){
 			}
 		}
 	}
+  
 	rawFile.send(null);
 	
 	// Return the Json String
@@ -417,25 +427,15 @@ function animate() {
 
 // -------------------- Map handling --------------------
 
-// Calculate values used for map
-function calculateMapValues(width){
-  mapWidth = 960;
-  mapHeight = mapWidth / 1.846;
-  mapModelWidth = mapWidth / 1.52;
-  baseMarginX = -(mapWidth / 2 - 125);
-  baseMarginY = -(mapHeight / 2 - 125); 
-  mapPixelFactor = mapModelWidth / MODEL_WIDTH;
-}
-
 // Update camera position on map
 function updateMap(){  
   var mapPixelFactorMini = MAP_MINI_WIDTH / MODEL_WIDTH;
-  var mapPixelFactorFull = (MAP_FULL_WIDTH / 1.864) / MODEL_WIDTH;
+  var mapPixelFactorFull = (MAP_FULL_WIDTH - FULL_MAP_DELTA) / MODEL_WIDTH;
     
-  var marginXMini = -(camera.position.x * mapPixelFactorMini) +  MAP_MINI_WIDTH / 2;
-  var marginYMini = -(camera.position.z * mapPixelFactorMini) + MAP_MINI_HEIGHT / 2;
-  var marginXFull = -(camera.position.x * mapPixelFactorFull) +  MAP_FULL_WIDTH / 2;
-  var marginYFull = -(camera.position.z * mapPixelFactorFull) + MAP_FULL_HEIGHT / 2;
+  var marginXMini = MAP_MINI_WIDTH / 2 - (camera.position.x * mapPixelFactorMini);
+  var marginYMini = MAP_MINI_HEIGHT / 2 - (camera.position.z * mapPixelFactorMini);
+  var marginXFull = MAP_FULL_WIDTH / 2 - (camera.position.x * mapPixelFactorFull);
+  var marginYFull = MAP_FULL_HEIGHT / 2 - (camera.position.z * mapPixelFactorFull);
 
   if(marginXMini > MAP_MINI_WIDTH - 18){
     marginXMini = MAP_MINI_WIDTH - 18;
@@ -487,7 +487,6 @@ function detectIfMarkerClicked(){
 	// Check if the ray intersected with a marker object
 	var intersects = raycaster.intersectObjects(markers, true);
 	if (intersects.length > 0) {
-		console.log(intersects[0].object.name);
 		// Show Overlay of Marker if successful hit
 		showContentOverlay(intersects[0].object.name);
 		return false;
@@ -649,6 +648,22 @@ function setBoxOnUserClick(){
 	}
 }
 
+// Show marker in markers list
+function updateMarkerList(){
+  var markerListContent = "";
+  markers.forEach(function(marker){
+    markerListContent += "<div class='marker-list-entry'>" +
+        "<p>" + marker.name + "</p>" +
+        "<div onclick='deleteMarkerFromModel(" + marker.id + ");' >" +
+          "<img src='assets/delete.png'/>" +
+        "</div>" + 
+      "</div>"
+  });
+  
+  $(markerListContainerId).empty();
+  $(markerListContainerId).html(markerListContent);
+}
+
 // Show marker dialog
 function showAddMarkerDialog(point){
 	// Show bootbox dialog to name the marker
@@ -664,24 +679,51 @@ function showAddMarkerDialog(point){
 // Add marker to scene
 function addMarkerToModel(point, name){
 	// Create new Sphere at x,y,z position
-    var marker = new THREE.Mesh(new THREE.SphereGeometry(5), new THREE.MeshLambertMaterial({ color: 0xff0000 }));
-    marker.position.x = point.x;
-    marker.position.y = point.y;
-    marker.position.z = point.z;
-    marker.name = name;
-	
+  var marker = new THREE.Mesh(new THREE.SphereGeometry(5), new THREE.MeshLambertMaterial({ color: 0xff0000 }));
+  marker.position.x = point.x;
+  marker.position.y = point.y;
+  marker.position.z = point.z;
+  marker.id = markers.length + 1;
+  marker.name = name;
+
 	// Write marker to file
-    addMarkerToFile(marker);
+	markers.push(marker);
+  saveMarkersToFile(marker);
+    
+  // Update marker list
+  updateMarkerList();
 	
 	// Add marker mesh to scene
-    scene.add(marker);
+  scene.add(marker);
 }
 
+// Remove marker from scene
+function deleteMarkerFromModel(id){
+  console.log(markers);
+  // Get marker to delete
+  var markersToKeep = [];
+  markers.forEach(function(marker){
+    if(marker.id != id){
+      markersToKeep.push(marker);
+    } else {
+      // Remove marker from scene
+      scene.remove(marker);
+    }
+  });
+  markers = markersToKeep;
+  console.log(markers);
+  
+  // Write markers to file
+  saveMarkersToFile();
+  
+  // Update markers list
+  updateMarkerList();
+}
+
+
 // Write marker to the file
-function addMarkerToFile(marker){
-	// Add marker to marker array
-	markers.push(marker);
-	
+function saveMarkersToFile(){
+  // Create saveable objects
 	var objectsToSave = [];
 	$.each(markers, function(index, value){
 		objectsToSave.push({name: value.name, position: value.position});

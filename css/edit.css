@@ -1,0 +1,86 @@
+.marker-list-container{
+  height: 100%;
+  width: 350px;
+  background: #DEDEDE;
+  padding-bottom: 20px;
+  border-radius: 2px;
+  display: block;
+  float: right;
+  right: 0;
+  position: absolute;
+  overflow: auto;
+  z-index: 9;
+  box-shadow: 0 10px 20px rgba(0,0,0,0.19), 0 6px 6px rgba(0,0,0,0.23);
+}
+
+/* Let's get this party started */
+::-webkit-scrollbar {
+    width: 12px;
+}
+ 
+/* Track */
+::-webkit-scrollbar-track {
+    -webkit-box-shadow: inset 0 0 6px rgba(0,0,0,0.3); 
+    -webkit-border-radius: 10px;
+    border-radius: 10px;
+}
+ 
+/* Handle */
+::-webkit-scrollbar-thumb {
+    -webkit-border-radius: 10px;
+    border-radius: 10px;
+    background: gray(255,0,0,0.8); 
+    -webkit-box-shadow: inset 0 0 6px rgba(0,0,0,0.5); 
+}
+::-webkit-scrollbar-thumb:window-inactive {
+	background: darkgray(255,0,0,0.4); 
+}
+
+.marker-list-title{
+  font-size: 30px;
+  font-family: roboto;
+  font-weight: bold;
+  padding: 15px 0 15px 0px;
+  color: #636363;
+  text-align: center;
+  margin: 20px 0 20px 0;
+  width: 100%;
+  background: white;
+  border-top: 2px solid darkgray;
+  border-bottom: 2px solid darkgray;
+  box-shadow: 0 10px 20px rgba(0,0,0,0.19), 0 6px 6px rgba(0,0,0,0.23);
+}
+
+.marker-list-entry{
+  width: 100%;
+  height: 52px;
+  margin: 10px 0 10px 0;
+  padding: 0 0 0 20px;
+  background: white;
+  text-align: left;
+  border-top: 2px solid darkgray;
+  border-bottom: 2px solid darkgray;
+  box-shadow: 0 10px 20px rgba(0,0,0,0.19), 0 6px 6px rgba(0,0,0,0.23);
+}
+
+.marker-list-entry p{
+  font-size: 26px;
+  margin: 5px 0 5px 0;
+  float: left;
+  font-family: roboto;
+  color: #636363;
+}
+
+.marker-list-entry div{
+  cursor: pointer;
+  height: 100%;
+  width: 50px;
+  float: right;
+  background: red;
+  text-align: center;
+}
+
+.marker-list-entry div img{
+  height: 27px;
+  margin: 10px 0 10px 0;
+}

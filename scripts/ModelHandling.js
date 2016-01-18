@@ -498,7 +498,9 @@ function detectIfMarkerClicked(){
 // Load html file with the same name as the marker in content div
 function showContentOverlay(markerName){
 	$( "#content" ).load( "content/" + markerName + ".html" );
+	$( "#content-overlay" ).fadeIn( 300 );
 	$( "#content-container" ).fadeIn( 300 );
+	$( ".close-icon" ).fadeIn( 300 );
 }
 
 // -------------------------------------------------------------

@@ -7,7 +7,7 @@
 		<!-- CSS -->
 		<link rel="stylesheet" type="text/css" href="css/style.css">
 		<link rel="stylesheet" href="css/rrssb.css" />
-		<link href='https://fonts.googleapis.com/css?family=Lato:400,300|Roboto:400,300' rel='stylesheet' type='text/css'>
+		<link href='https://fonts.googleapis.com/css?family=Lato:400,300|Roboto:700,500,400,300' rel='stylesheet' type='text/css'>
 
 		<!-- jQuery scripts -->
 		<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.2/jquery.min.js"></script>
@@ -92,7 +92,10 @@
 			// Show About Page in Content
 			function showAbout(){
 				$( "#content" ).load( "content/about.html" );
+				$( "#content-overlay" ).fadeIn( 300 );     
 				$( "#content-container" ).fadeIn( 300 );     
+				$( ".close-icon" ).fadeIn( 300 );     
+        
 			}
 		  
 			// ------------- Helpbox handling -------------
@@ -287,11 +290,14 @@
 			// Hide the Marker Content
 			function closeContent(){    
 				$( "#content-container" ).fadeOut( 100 );
+				$( "#content-overlay" ).fadeOut( 100 );
+				$( ".close-icon" ).fadeOut( 100 );  
 				preventEventPropagation();   
 			}
 			
 			// Prevent that Controller gets moved when user clicks on Button
 			function preventEventPropagation(handlerEvent){     
+        console.log("prevent");
 				if(handlerEvent != undefined){
 				  handlerEvent.preventDefault();
 				  handlerEvent.stopPropagation();
@@ -500,10 +506,11 @@
 		</div>
 
 		<!-- Container for Marker-Content -->
-		<div id="content-container" onclick="closeContent(event);" onmousedown="preventEventPropagation(event);">
-			<div id="content" onclick="preventEventPropagation(event);"></div>
-			<img class="close-icon" src="assets/close.png" onclick="closeContent(event);" />
-		</div>
+		<div id="content-overlay" onclick="closeContent(event);" onmousedown="preventEventPropagation(event);" ></div>
+		<div id="content-container">
+	    <div id="content"></div>
+		  <img class="close-icon" src="assets/close.png" onclick="closeContent(event);" />
+    </div>
 
 		<!-- Copyright -->
 		<div id="copyright">&copy; Daniel Mohler- Schmid, Läufelfingen / 3D-Rekonstruktion &copy; 2013 Archäologie Baselland, Joe Rohrer</div>	
